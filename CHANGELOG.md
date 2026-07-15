@@ -18,6 +18,9 @@ All notable changes to this project are documented here. The format is based on 
   file-sync damage (hidden `.pth` flags that Python 3.13+ silently skips,
   ` 2` conflict duplicates, `.icloud` placeholders) and prints the fix,
   including `.venv.nosync` as a best-effort fallback for synced checkouts.
+- Canonical GitHub comparison links for changelog release headings.
+- Repository community docs: `SECURITY.md`, `CONTRIBUTING.md`, and
+  `CODE_OF_CONDUCT.md`.
 
 ### Changed
 
@@ -80,3 +83,7 @@ All notable changes to this project are documented here. The format is based on 
   provider registry with `echo`, `anthropic`, and `openai` adapters (vendor
   SDKs as optional extras with deferred imports), environment-only settings,
   and safe-by-default file writes.
+
+[Unreleased]: https://github.com/lilabrooks/python-cli-template/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/lilabrooks/python-cli-template/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/lilabrooks/python-cli-template/releases/tag/v0.1.0

@@ -41,7 +41,17 @@ skeleton-cli = "skeleton_cli.cli:main"
 packages = ["src/skeleton_cli"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "docs", "README.md", "LICENSE"]
+include = [
+    "src",
+    "tests",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+]
 
 [tool.pytest.ini_options]
 addopts = "-q --strict-config --strict-markers"
