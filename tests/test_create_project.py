@@ -100,6 +100,17 @@ def test_refuses_colliding_target_files(tmp_path: Path) -> None:
     assert not (target / "pyproject.toml").exists()
 
 
+def test_refuses_target_inside_template_without_creating_it() -> None:
+    _require_git_checkout()
+    target = REPO_ROOT / "qa-inside-target"
+
+    result = _create(target, "sample-tool")
+
+    assert result.returncode == 1
+    assert "inside the template checkout" in result.stderr
+    assert not target.exists(), "refusal must not leave a stray directory behind"
+
+
 def test_rejects_invalid_dist_name(tmp_path: Path) -> None:
     _require_git_checkout()
 

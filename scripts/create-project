@@ -73,8 +73,8 @@ if ! git -C "$TEMPLATE_ROOT" rev-parse HEAD >/dev/null 2>&1; then
   exit 1
 fi
 
-mkdir -p "$TARGET_ARG"
-TARGET="$(cd "$TARGET_ARG" && pwd)"
+# Resolve before creating anything, so a refusal leaves no stray directory.
+TARGET="$(python3 -c 'import os, sys; print(os.path.abspath(sys.argv[1]))' "$TARGET_ARG")"
 
 case "$TARGET/" in
   "$TEMPLATE_ROOT"/*)
@@ -82,6 +82,8 @@ case "$TARGET/" in
     exit 1
     ;;
 esac
+
+mkdir -p "$TARGET"
 
 # Collision check against the committed tree. .gitignore is merged, so it is
 # exempt; everything else refuses rather than overwrites.
