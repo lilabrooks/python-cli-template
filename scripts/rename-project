@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Parameterize the walking skeleton into your project. Run once, right after
+# creating a repo from this template, then delete this script.
+#
+# Usage:
+#   bash scripts/rename-project <dist-name>
+#
+# <dist-name> is the pip-installable distribution name, lowercase with
+# hyphens (for example: spec-drift). Derived from it:
+#   - import package  spec_drift   (hyphens become underscores)
+#   - console command spec-drift   (same as the dist name)
+#   - env-var prefix  SPEC_DRIFT   (package name upper-cased)
+#
+# The script rewrites the three skeleton tokens (skeleton-cli, skeleton_cli,
+# SKELETON_CLI) across every tracked file except itself and LICENSE, moves
+# src/skeleton_cli/ to the new package directory, and substitutes the template
+# owner's name in docs frontmatter and pyproject with `git config user.name`.
+# LICENSE is left untouched: relicensing is a deliberate act, not a rename.
+
+set -euo pipefail
+
+if [ "$#" -ne 1 ]; then
+  sed -n '2,12p' "$0" >&2
+  exit 2
+fi
+
+DIST="$1"
+if ! printf '%s' "$DIST" | grep -Eq '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
+  printf 'Invalid dist name %s: use lowercase letters, digits, and single hyphens (e.g. spec-drift).\n' "$DIST" >&2
+  exit 2
+fi
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PKG="${DIST//-/_}"
+ENV_PREFIX="$(printf '%s' "$PKG" | tr '[:lower:]' '[:upper:]')"
+TEMPLATE_OWNER="Lila Brooks"
+NEW_OWNER="$(git -C "$ROOT" config user.name 2>/dev/null || true)"
+
+if [ -d "$ROOT/src/$PKG" ] && [ "$PKG" != "skeleton_cli" ]; then
+  printf 'src/%s already exists; refusing to overwrite.\n' "$PKG" >&2
+  exit 1
+fi
+
+# Every regular text file in the repo except this script, LICENSE, and git
+# internals. Works in and out of a git checkout.
+target_files() {
+  find "$ROOT" -type f \
+    ! -path "$ROOT/.git/*" \
+    ! -path "$ROOT/.venv/*" \
+    ! -name 'rename-project' \
+    ! -name 'LICENSE' \
+    ! -name '*.pyc'
+}
+
+substitute() {
+  local file="$1"
+  python3 - "$file" "$DIST" "$PKG" "$ENV_PREFIX" "$TEMPLATE_OWNER" "${NEW_OWNER:-}" <<'PY'
+import sys
+from pathlib import Path
+
+path, dist, pkg, env_prefix, template_owner, new_owner = sys.argv[1:7]
+p = Path(path)
+try:
+    text = p.read_text(encoding="utf-8")
+except UnicodeDecodeError:
+    sys.exit(0)  # binary file; leave it alone
+original = text
+text = text.replace("skeleton_cli", pkg)
+text = text.replace("skeleton-cli", dist)
+text = text.replace("SKELETON_CLI", env_prefix)
+if new_owner and new_owner != template_owner:
+    text = text.replace(template_owner, new_owner)
+if text != original:
+    p.write_text(text, encoding="utf-8")
+PY
+}
+
+count=0
+while IFS= read -r file; do
+  substitute "$file"
+  count=$((count + 1))
+done < <(target_files)
+
+if [ -d "$ROOT/src/skeleton_cli" ] && [ "$PKG" != "skeleton_cli" ]; then
+  mv "$ROOT/src/skeleton_cli" "$ROOT/src/$PKG"
+fi
+
+printf 'Renamed the skeleton to %s (package %s, env prefix %s_*) across %d files.\n' \
+  "$DIST" "$PKG" "$ENV_PREFIX" "$count"
+if [ -n "$NEW_OWNER" ] && [ "$NEW_OWNER" != "$TEMPLATE_OWNER" ]; then
+  printf 'Owner set to %s in docs and pyproject (LICENSE left as-is).\n' "$NEW_OWNER"
+fi
+cat <<'EOF'
+
+Next steps:
+  1. Rewrite README.md for your project (it still describes the template).
+  2. Reset CHANGELOG.md's 0.1.0 entry to describe your project.
+  3. Recreate the venv and verify: python3 -m venv .venv &&
+     .venv/bin/pip install -e ".[dev,anthropic,openai]" && make check
+  4. If your CLI does not call language models, delete the provider layer:
+     the agents/, config/, core/, providers/, runtime/ packages, their tests,
+     the anthropic/openai extras in pyproject.toml and requirements.txt,
+     and .env.example.
+  5. Install the operating contract on top (goal, mapping, hooks, loop):
+     bash /path/to/claude-okf-repo-kit/scripts/update-existing-repo .
+  6. Delete this script; it is single-use.
+EOF

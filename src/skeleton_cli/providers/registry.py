@@ -1,0 +1,47 @@
+"""Single source of truth for provider adapters.
+
+The factory, the unknown-provider error, and the `providers` command all read
+from `_PROVIDERS`. Add a real vendor by importing its adapter and adding one
+entry here.
+"""
+
+from collections.abc import Callable
+
+from skeleton_cli.core.ports import LanguageModel
+from skeleton_cli.providers.anthropic import AnthropicLanguageModel
+from skeleton_cli.providers.echo import EchoLanguageModel
+from skeleton_cli.providers.openai import OpenAILanguageModel
+
+
+def _create_echo(model: str | None) -> LanguageModel:
+    del model  # echo has no underlying model to select
+    return EchoLanguageModel()
+
+
+def _create_anthropic(model: str | None) -> LanguageModel:
+    return AnthropicLanguageModel(model=model) if model else AnthropicLanguageModel()
+
+
+def _create_openai(model: str | None) -> LanguageModel:
+    return OpenAILanguageModel(model=model) if model else OpenAILanguageModel()
+
+
+_PROVIDERS: dict[str, Callable[[str | None], LanguageModel]] = {
+    "echo": _create_echo,
+    "anthropic": _create_anthropic,
+    "openai": _create_openai,
+}
+
+
+def available_providers() -> list[str]:
+    return sorted(_PROVIDERS)
+
+
+def create_provider(name: str, *, model: str | None = None) -> LanguageModel:
+    try:
+        factory = _PROVIDERS[name]
+    except KeyError:
+        supported = ", ".join(available_providers())
+        msg = f"Unknown provider {name!r}. Supported providers: {supported}."
+        raise ValueError(msg) from None
+    return factory(model)
