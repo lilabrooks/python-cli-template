@@ -56,8 +56,9 @@ and similar) has damaged the checkout: hidden flags on `.venv` `.pth` files
 (Python 3.13+ skips those, so editable installs and console scripts break
 while pytest still passes), ` 2` conflict duplicates, or `.icloud`
 placeholders. Apply the fix it prints. Prefer keeping checkouts outside
-synced folders; failing that, create the environment as `.venv.nosync` with a
-`.venv` symlink — sync tools skip `*.nosync` names.
+synced folders. If that is temporarily impossible, `.venv.nosync` with a
+`.venv` symlink may reduce virtual-environment churn with some sync tools;
+treat it as a best-effort fallback and rerun the preflight to verify.
 
 Use `make check-all` when a change may behave differently across Python 3.12,
 3.13, and 3.14. It requires `uv`, can download interpreters, and uses isolated

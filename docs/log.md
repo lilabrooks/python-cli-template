@@ -21,8 +21,10 @@ Dated changes to the docs bundle, newest first.
   breaking editable installs and console scripts while pytest still passes —
   and leave ` 2` conflict duplicates and `.icloud` placeholders. The preflight
   turns that damage into one actionable failure with the fix in the message;
-  AGENTS.md and the README document it and the `.venv.nosync` mitigation.
-  Guarded by `tests/test_check_env.py`.
+  AGENTS.md and the README document it and the best-effort `.venv.nosync`
+  fallback. The detector also catches conflict copies of tool directories
+  themselves and deduplicates symlinked environment roots. Guarded by
+  `tests/test_check_env.py`.
 - Added Codex cloud setup-script guidance, stable help output for the project
   scripts, and a pip fallback that works when target paths contain brackets.
   Paths containing `#` now fail early because Python console-script shebangs

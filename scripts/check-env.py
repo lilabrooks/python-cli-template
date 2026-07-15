@@ -19,6 +19,7 @@ from pathlib import Path
 
 SYNC_DUPLICATE = re.compile(r" \d+(\.[^/ ]+)?$")
 TOOL_DIRS = (".venv", ".venv.nosync", ".mypy_cache", ".pytest_cache", ".ruff_cache")
+VENV_DIRS = (".venv", ".venv.nosync")
 
 
 def is_flag_hidden(path: Path) -> bool:
@@ -30,22 +31,37 @@ def is_flag_hidden(path: Path) -> bool:
     return bool(hidden_flags or hidden_attributes)
 
 
+def unique_directories(root: Path, names: tuple[str, ...]) -> list[Path]:
+    """Return existing directories once, preferring real paths over symlinks."""
+    candidates = [root / name for name in names if (root / name).is_dir()]
+    candidates.sort(key=lambda path: path.is_symlink())
+    seen: set[Path] = set()
+    unique: list[Path] = []
+    for path in candidates:
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        unique.append(path)
+    return unique
+
+
 def hidden_pth_files(root: Path) -> list[Path]:
     flagged: list[Path] = []
-    for name in (".venv", ".venv.nosync"):
-        venv = root / name
-        if not venv.is_dir():
-            continue
+    for venv in unique_directories(root, VENV_DIRS):
         flagged.extend(path for path in sorted(venv.rglob("*.pth")) if is_flag_hidden(path))
     return flagged
 
 
+def is_tool_directory_copy(path: Path) -> bool:
+    if not path.is_dir():
+        return False
+    return any(re.fullmatch(rf"{re.escape(name)} \d+", path.name) for name in TOOL_DIRS)
+
+
 def sync_duplicates(root: Path) -> list[Path]:
-    found: list[Path] = []
-    for name in TOOL_DIRS:
-        tool_dir = root / name
-        if not tool_dir.is_dir():
-            continue
+    found = [path for path in sorted(root.iterdir()) if is_tool_directory_copy(path)]
+    for tool_dir in unique_directories(root, TOOL_DIRS):
         for current, dirnames, filenames in tool_dir.walk():
             found.extend(
                 current / entry
@@ -113,8 +129,9 @@ def main(argv: list[str] | None = None) -> int:
             sys.stderr.write(f"- {problem}\n")
         sys.stderr.write(
             "\nDurable fix: keep working checkouts outside synced folders (e.g. ~/code,\n"
-            "not an iCloud-synced ~/Documents), or at least the venv: create it as\n"
-            ".venv.nosync with a .venv symlink — sync tools skip *.nosync names.\n"
+            "not an iCloud-synced ~/Documents). If that is temporarily impossible,\n"
+            ".venv.nosync with a .venv symlink may reduce venv churn on some sync\n"
+            "tools, but it is a best-effort fallback rather than a guarantee.\n"
         )
         return 1
 

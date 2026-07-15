@@ -17,7 +17,7 @@ All notable changes to this project are documented here. The format is based on 
   `make check`, `make check-all`, and the code-quality workflow: it detects
   file-sync damage (hidden `.pth` flags that Python 3.13+ silently skips,
   ` 2` conflict duplicates, `.icloud` placeholders) and prints the fix,
-  including the `.venv.nosync` mitigation for synced checkouts.
+  including `.venv.nosync` as a best-effort fallback for synced checkouts.
 
 ### Changed
 
@@ -46,6 +46,9 @@ All notable changes to this project are documented here. The format is based on 
   checkouts while keeping the conventional `.venv` path ignored.
 - Ruff now identifies the template package as first-party, so renamed projects
   keep valid import ordering regardless of the chosen package name.
+- The environment preflight detects conflict copies of tool directories
+  themselves and avoids double-reporting a virtual environment reached through
+  both `.venv` and `.venv.nosync`.
 
 ## [0.1.1] - 2026-07-14
 

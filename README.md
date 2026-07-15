@@ -21,6 +21,9 @@ second, then the goal loop builds your actual tool.
   that catches file-sync damage (iCloud-style hidden flags and conflict
   duplicates) — one `make check`, mirrored by three GitHub Actions workflows
   across Python 3.12–3.14.
+  Keep working checkouts outside synced folders when possible. A
+  `.venv.nosync` directory with a `.venv` symlink may reduce environment churn
+  with some sync tools, but remains a best-effort fallback.
 - **Repository-health tests.** The repo tests itself: the version must agree
   across `pyproject.toml`, the package, `CHANGELOG.md`, and docs; no tracked
   file may match `.gitignore`; `requirements.txt` must mirror the optional

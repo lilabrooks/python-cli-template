@@ -50,6 +50,28 @@ def test_flags_sync_conflict_duplicates(tmp_path: Path) -> None:
     assert "module.cpython-314 2.pyc" in result.stderr
 
 
+def test_flags_conflict_copy_of_tool_directory(tmp_path: Path) -> None:
+    (tmp_path / ".venv 2").mkdir()
+
+    result = _run(tmp_path)
+
+    assert result.returncode == 1
+    assert ".venv 2" in result.stderr
+    assert "best-effort fallback rather than a guarantee" in result.stderr
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="directory symlinks need extra privileges")
+def test_deduplicates_symlinked_environment(tmp_path: Path) -> None:
+    (tmp_path / ".venv.nosync" / "lib 2").mkdir(parents=True)
+    (tmp_path / ".venv").symlink_to(".venv.nosync", target_is_directory=True)
+
+    result = _run(tmp_path)
+
+    assert result.returncode == 1
+    assert "1 sync-conflict duplicate(s)" in result.stderr
+    assert result.stderr.count("lib 2") == 1
+
+
 def test_flags_icloud_placeholders(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / ".cli.py.icloud").write_bytes(b"")

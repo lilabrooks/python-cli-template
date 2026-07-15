@@ -195,6 +195,7 @@ def test_rejects_invalid_dist_name(tmp_path: Path) -> None:
 
 
 def test_rejects_hash_in_target_before_creating_it(tmp_path: Path) -> None:
+    _require_git_checkout()
     target = tmp_path / "project#copy"
 
     result = _create(target, "sample-tool")
