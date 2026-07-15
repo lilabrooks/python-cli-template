@@ -14,6 +14,9 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-14
 
+- Extended Dependabot to the `pip` ecosystem (weekly) alongside
+  `github-actions`: unlike spec-agent-cli, this repo runs no Snyk, so
+  Dependabot is the dependency-vulnerability watch; no secrets required.
 - Added `scripts/create-project` and its smoke tests: the mechanical
   template-to-project sequence (extract, rename, merge, git-init, gate, kit
   install, tooling cleanup) now lives in one deterministic, agent-neutral

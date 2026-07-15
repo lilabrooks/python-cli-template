@@ -12,6 +12,9 @@ All notable changes to this project are documented here. The format is based on 
   gate in a new venv, optionally installs claude-okf-repo-kit, removes the
   template-side tooling from the target, and prints the remaining judgment
   steps. Contract guarded by `tests/test_create_project.py`.
+- Dependabot now also watches the `pip` ecosystem weekly: this repo carries no
+  Snyk scanning, so Dependabot covers Python dependency vulnerabilities in the
+  scanner mirror and extras without needing secrets.
 
 ## [0.1.0] - 2026-07-14
 
