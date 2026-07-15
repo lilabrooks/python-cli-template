@@ -36,6 +36,27 @@ honest from here.
 
 ## Using the template
 
+**Preferred path — one command from a template checkout.** Deterministic and
+agent-neutral (plain bash; equally runnable by a human, Claude Code, or
+Codex), so no session re-derives the sequence:
+
+```bash
+bash scripts/create-project /path/to/your-tool your-tool-name
+```
+
+It extracts this template's committed tree into the target (a fresh directory,
+or an existing repo that only carries goal-shaped content like `docs/GOAL.md`
+— colliding files are refused, an existing `.gitignore` is merged), renames
+the skeleton, git-inits if needed, creates a venv and runs `make check`,
+installs [claude-okf-repo-kit](https://github.com/lilabrooks/claude-okf-repo-kit)
+when a clone is available (`--kit /path`, auto-detected as a sibling, or
+`--no-kit`), removes the template-side tooling from the target, and prints the
+judgment steps that remain: project README and CHANGELOG, the goal, the
+playbook brackets. Its contract is guarded by `tests/test_create_project.py`
+in this repo's own CI.
+
+**Manual path** (the same sequence, step by step):
+
 1. **Create your repo from this one** (GitHub "Use this template", or clone
    and re-init).
 2. **Rename the skeleton** (single-use, then delete the script):

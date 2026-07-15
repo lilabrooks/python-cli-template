@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-14
+
+### Added
+
+- `scripts/create-project`: one-command, agent-neutral project creation —
+  extracts the committed template tree into a fresh or goal-only target,
+  renames the skeleton, merges an existing `.gitignore`, git-inits, runs the
+  gate in a new venv, optionally installs claude-okf-repo-kit, removes the
+  template-side tooling from the target, and prints the remaining judgment
+  steps. Contract guarded by `tests/test_create_project.py`.
+
 ## [0.1.0] - 2026-07-14
 
 ### Added
