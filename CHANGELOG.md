@@ -11,6 +11,8 @@ All notable changes to this project are documented here. The format is based on 
 - Installed console-script coverage and a full generated-project CI smoke test.
 - uv-first project setup with a project-specific lockfile and an explicit
   `--pip` fallback in `scripts/create-project`.
+- Codex cloud guidance for installing dependencies during the network-enabled
+  environment setup phase.
 
 ### Changed
 
@@ -29,6 +31,16 @@ All notable changes to this project are documented here. The format is based on 
   escapes, mismatched file/target lists, and duplicate targets before writing.
 - `.gitignore` now covers local Codex logs and anchors build/report output to
   the repository root so nested source directories remain trackable.
+- Project-creation help no longer depends on shell-script line numbers. The pip
+  fallback now supports bracketed target paths and rejects `#` paths before
+  creating files because Python console-script shebangs cannot portably use
+  them.
+- Removed undocumented Codex-local filenames from `.gitignore` so unexpected
+  repository files remain visible.
+- Added `.venv.nosync/` support for virtual environments in cloud-synced
+  checkouts while keeping the conventional `.venv` path ignored.
+- Ruff now identifies the template package as first-party, so renamed projects
+  keep valid import ordering regardless of the chosen package name.
 
 ## [0.1.1] - 2026-07-14
 

@@ -2,9 +2,6 @@
 # Parameterize the walking skeleton into your project. Run once, right after
 # creating a repo from this template, then delete this script.
 #
-# Usage:
-#   bash scripts/rename-project <dist-name>
-#
 # <dist-name> is the pip-installable distribution name, lowercase with
 # hyphens (for example: spec-drift). Derived from it:
 #   - import package  spec_drift   (hyphens become underscores)
@@ -19,8 +16,18 @@
 
 set -euo pipefail
 
+usage() {
+  cat <<'EOF'
+Usage:
+  bash scripts/rename-project DIST
+
+DIST must use lowercase letters, digits, and single hyphens (for example: spec-drift).
+The import package uses underscores and the environment prefix uses uppercase underscores.
+EOF
+}
+
 if [ "$#" -ne 1 ]; then
-  sed -n '2,12p' "$0" >&2
+  usage >&2
   exit 2
 fi
 

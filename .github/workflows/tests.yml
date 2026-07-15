@@ -55,6 +55,7 @@ jobs:
 
       - name: Create and verify the pip fallback
         run: |
-          bash scripts/create-project "$RUNNER_TEMP/pip-tool" pip-tool --no-kit --pip
-          test ! -e "$RUNNER_TEMP/pip-tool/uv.lock"
-          "$RUNNER_TEMP/pip-tool/.venv/bin/pip-tool" --version
+          pip_target="$RUNNER_TEMP/pip[tool]qa"
+          bash scripts/create-project "$pip_target" pip-tool --no-kit --pip
+          test ! -e "$pip_target/uv.lock"
+          "$pip_target/.venv/bin/pip-tool" --version

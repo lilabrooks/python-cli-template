@@ -47,6 +47,35 @@ def _create(
     )
 
 
+def test_create_project_help_lists_supported_options() -> None:
+    result = subprocess.run(
+        ["bash", str(REPO_ROOT / "scripts" / "create-project"), "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.startswith("Usage:\n")
+    for option in ("--kit DIR", "--no-kit", "--pip", "--skip-venv"):
+        assert option in result.stdout
+    assert result.stderr == ""
+
+
+def test_rename_project_usage_is_stable() -> None:
+    result = subprocess.run(
+        ["bash", str(REPO_ROOT / "scripts" / "rename-project")],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert result.stderr.startswith("Usage:\n")
+    assert "DIST must use lowercase letters" in result.stderr
+    assert result.stdout == ""
+
+
 def test_creates_renamed_project_from_committed_tree(tmp_path: Path) -> None:
     _require_git_checkout()
     target = tmp_path / "new-proj"
@@ -162,3 +191,13 @@ def test_rejects_invalid_dist_name(tmp_path: Path) -> None:
 
     assert result.returncode == 2
     assert "Invalid dist name" in result.stderr
+
+
+def test_rejects_hash_in_target_before_creating_it(tmp_path: Path) -> None:
+    target = tmp_path / "project#copy"
+
+    result = _create(target, "sample-tool")
+
+    assert result.returncode == 2
+    assert "console-script shebangs" in result.stderr
+    assert not target.exists()

@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # Stamp this template into a new project directory, deterministically.
 #
-# Usage:
-#   bash scripts/create-project /path/to/target <dist-name> [--kit /path/to/claude-okf-repo-kit | --no-kit] [--pip] [--skip-venv]
-#
 # Runs the whole mechanical flow in order: extract this template's committed
 # tree into the target, rename the skeleton to <dist-name>, merge (never
 # clobber) an existing .gitignore, git-init if needed, create the development
@@ -22,7 +19,18 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,19p' "$0"
+  cat <<'EOF'
+Usage:
+  bash scripts/create-project TARGET DIST [--kit DIR | --no-kit] [--pip] [--skip-venv]
+
+Options:
+  --kit DIR    Install claude-okf-repo-kit from DIR.
+  --no-kit     Skip kit installation.
+  --pip        Use venv and pip even when uv is available.
+  --skip-venv  Skip dependency installation and verification.
+
+TARGET must not contain #; Python console-script shebangs cannot portably use it.
+EOF
 }
 
 if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
@@ -81,6 +89,13 @@ fi
 
 # Resolve before creating anything, so a refusal leaves no stray directory.
 TARGET="$(python3 -c 'import os, sys; print(os.path.abspath(sys.argv[1]))' "$TARGET_ARG")"
+
+case "$TARGET" in
+  *'#'*)
+    printf 'Target %s contains #: Python console-script shebangs cannot portably use that path.\n' "$TARGET" >&2
+    exit 2
+    ;;
+esac
 
 case "$TARGET/" in
   "$TEMPLATE_ROOT"/*)
@@ -147,7 +162,7 @@ if [ "$SKIP_VENV" -eq 0 ]; then
     fi
   else
     python3 -m venv "$TARGET/.venv"
-    "$TARGET/.venv/bin/pip" install -q -e "${TARGET}[dev,anthropic,openai]"
+    (cd "$TARGET" && .venv/bin/python -m pip install -q -e ".[dev,anthropic,openai]")
     if make -C "$TARGET" check >/dev/null 2>&1; then
       venv_note="venv/pip environment created; make check passed"
     else

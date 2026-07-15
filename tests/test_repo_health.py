@@ -142,7 +142,8 @@ def test_gitignore_covers_local_artifacts_without_hiding_project_files() -> None
         return result.returncode == 0
 
     ignored = [
-        ".venv/bin/python",
+        ".venv",
+        ".venv.nosync/bin/python",
         "src/example/__pycache__/module.pyc",
         "dist/package.whl",
         "build/package/file.py",
@@ -150,7 +151,6 @@ def test_gitignore_covers_local_artifacts_without_hiding_project_files() -> None
         "htmlcov/index.html",
         "coverage.xml",
         ".env.local",
-        ".codex/settings.local.json",
         ".codex-log/session.jsonl",
     ]
     trackable = [
@@ -161,6 +161,8 @@ def test_gitignore_covers_local_artifacts_without_hiding_project_files() -> None
         "AGENTS.override.md",
         ".codex/config.toml",
         ".codex/hooks/pre-tool.sh",
+        ".codex/settings.local.json",
+        "Codex.local.md",
         "src/dist/__init__.py",
         "src/build/__init__.py",
     ]

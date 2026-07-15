@@ -1,5 +1,6 @@
 # Python environments and caches
-.venv/
+.venv
+.venv.nosync/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -24,7 +25,5 @@ __pycache__/
 # Agent-local state
 .claude/settings.local.json
 CLAUDE.local.md
-.codex/settings.local.json
-Codex.local.md
 .codex-log/
 .okf-kit-backups/

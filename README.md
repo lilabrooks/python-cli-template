@@ -55,7 +55,9 @@ when a clone is available (`--kit /path`, auto-detected as a sibling, or
 `--no-kit`), removes the template-side tooling from the target, and prints the
 judgment steps that remain: project README and CHANGELOG, the goal, the
 playbook brackets. Its mechanics are guarded by `tests/test_create_project.py`;
-CI also runs the complete uv and pip setup paths on Python 3.14.
+CI also runs the complete uv and pip setup paths on Python 3.14, including a
+bracketed target path. Target paths containing `#` are refused before files are
+created because Python console-script shebangs cannot portably use them.
 
 **Manual path** (the same sequence, step by step):
 

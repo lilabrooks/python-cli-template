@@ -37,6 +37,10 @@ python3 -m venv .venv
 make check
 ```
 
+For Codex cloud environments, put the applicable setup block above in the
+environment setup script: setup runs with network access, while agent-phase
+internet access is off by default.
+
 The default `echo` provider works offline. Treat Anthropic and OpenAI calls as
 external operations that require the matching optional dependency, network
 access, and an environment-provided API key.

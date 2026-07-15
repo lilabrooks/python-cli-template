@@ -14,6 +14,17 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-14
 
+- Added Codex cloud setup-script guidance, stable help output for the project
+  scripts, and a pip fallback that works when target paths contain brackets.
+  Paths containing `#` now fail early because Python console-script shebangs
+  cannot portably use them. Removed two undocumented Codex-local names from
+  `.gitignore`; CI now exercises the bracketed-path case.
+- Added `.venv.nosync/` to `.gitignore` so synced-folder checkouts can keep the
+  conventional `.venv` link without cloud storage hiding editable-install
+  `.pth` files.
+- Marked the template package as first-party in Ruff configuration; the rename
+  script carries the setting forward, preventing package-name-dependent import
+  sorting failures in generated projects.
 - Raised the branch-coverage floor from 70% to 90% and made the coverage run
   part of `make check` and `make check-all`; the cross-version gate now launches
   isolated uv environments from a temporary directory without using or
