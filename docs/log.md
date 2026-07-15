@@ -14,6 +14,15 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-14
 
+- Added `scripts/check-env.py`, an environment preflight run first by
+  `make check`, `make check-all`, and the code-quality workflow. Synced
+  folders (iCloud Desktop & Documents and similar) stamp macOS hidden flags
+  onto `.venv` files — Python 3.13+ skips hidden `.pth` files, silently
+  breaking editable installs and console scripts while pytest still passes —
+  and leave ` 2` conflict duplicates and `.icloud` placeholders. The preflight
+  turns that damage into one actionable failure with the fix in the message;
+  AGENTS.md and the README document it and the `.venv.nosync` mitigation.
+  Guarded by `tests/test_check_env.py`.
 - Added Codex cloud setup-script guidance, stable help output for the project
   scripts, and a pip fallback that works when target paths contain brackets.
   Paths containing `#` now fail early because Python console-script shebangs

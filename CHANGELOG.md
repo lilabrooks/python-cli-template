@@ -13,6 +13,11 @@ All notable changes to this project are documented here. The format is based on 
   `--pip` fallback in `scripts/create-project`.
 - Codex cloud guidance for installing dependencies during the network-enabled
   environment setup phase.
+- `scripts/check-env.py`, an environment preflight that runs first in
+  `make check`, `make check-all`, and the code-quality workflow: it detects
+  file-sync damage (hidden `.pth` flags that Python 3.13+ silently skips,
+  ` 2` conflict duplicates, `.icloud` placeholders) and prints the fix,
+  including the `.venv.nosync` mitigation for synced checkouts.
 
 ### Changed
 

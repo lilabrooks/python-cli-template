@@ -9,7 +9,8 @@
 #                    push, so reach for it mainly to reproduce a
 #                    version-specific failure locally.
 #
-# Individual targets (lint, typecheck, test, okf, coverage) are available too.
+# Individual targets (check-env, lint, typecheck, test, okf, coverage) are
+# available too.
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 RUFF ?= $(if $(wildcard .venv/bin/ruff),.venv/bin/ruff,ruff)
@@ -18,9 +19,12 @@ PYTEST ?= $(if $(wildcard .venv/bin/pytest),.venv/bin/pytest,pytest)
 VERSIONS ?= 3.12 3.13 3.14
 UV_RUN ?= uv run --isolated
 
-.PHONY: check lint format typecheck test okf coverage check-all
+.PHONY: check check-env lint format typecheck test okf coverage check-all
 
-check: lint typecheck coverage okf
+check: check-env lint typecheck coverage okf
+
+check-env:
+	$(PYTHON) scripts/check-env.py
 
 lint:
 	$(RUFF) check .
@@ -60,6 +64,7 @@ check-all:
 			--with-requirements "$$root/requirements.txt" \
 			--python "$$v" -- sh -eu -c ' \
 				cd "$$1"; \
+				python scripts/check-env.py; \
 				ruff check .; \
 				ruff format --check .; \
 				mypy; \

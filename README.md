@@ -17,8 +17,10 @@ second, then the goal loop builds your actual tool.
   work out of the box; the template's own CI keeps every piece green, so the
   chassis cannot rot silently.
 - **The quality gate.** ruff (lint + format), mypy `strict`, pytest with a
-  90% branch-coverage floor, and docs validation — one `make check`, mirrored
-  by three GitHub Actions workflows across Python 3.12–3.14.
+  90% branch-coverage floor, docs validation, and an environment preflight
+  that catches file-sync damage (iCloud-style hidden flags and conflict
+  duplicates) — one `make check`, mirrored by three GitHub Actions workflows
+  across Python 3.12–3.14.
 - **Repository-health tests.** The repo tests itself: the version must agree
   across `pyproject.toml`, the package, `CHANGELOG.md`, and docs; no tracked
   file may match `.gitignore`; `requirements.txt` must mirror the optional
@@ -169,6 +171,7 @@ you what you missed.
 ├── .github/workflows/   # quality, tests, coverage — Python 3.12–3.14 matrix
 ├── docs/                # knowledge bundle indexes and documentation log
 ├── scripts/
+│   ├── check-env.py        # file-sync damage preflight, first step of make check
 │   ├── check-okf-docs.py   # stdlib-only docs validator, wired into make check
 │   ├── create-project      # preferred one-command project generator
 │   └── rename-project      # single-use parameterization, delete after use

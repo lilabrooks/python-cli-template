@@ -155,9 +155,10 @@ def test_merges_existing_gitignore_and_keeps_goal(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert (target / "docs" / "GOAL.md").read_text(encoding="utf-8") == "# Goal\n"
-    gitignore = (target / ".gitignore").read_text(encoding="utf-8")
-    assert "my-custom-entry" in gitignore
-    assert ".venv/" in gitignore
+    gitignore_lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert "my-custom-entry" in gitignore_lines
+    assert ".venv" in gitignore_lines
+    assert ".venv.nosync/" in gitignore_lines
 
 
 def test_refuses_colliding_target_files(tmp_path: Path) -> None:

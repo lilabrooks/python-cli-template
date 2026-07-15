@@ -47,9 +47,17 @@ access, and an environment-provided API key.
 
 ## Verification
 
-Run `make check` before handing off a change. It runs Ruff lint and formatting
-checks, strict mypy, pytest with branch coverage, and documentation validation.
-The coverage floor is 90%.
+Run `make check` before handing off a change. It runs an environment
+preflight, Ruff lint and formatting checks, strict mypy, pytest with branch
+coverage, and documentation validation. The coverage floor is 90%.
+
+The preflight (`scripts/check-env.py`) fails fast when file syncing (iCloud
+and similar) has damaged the checkout: hidden flags on `.venv` `.pth` files
+(Python 3.13+ skips those, so editable installs and console scripts break
+while pytest still passes), ` 2` conflict duplicates, or `.icloud`
+placeholders. Apply the fix it prints. Prefer keeping checkouts outside
+synced folders; failing that, create the environment as `.venv.nosync` with a
+`.venv` symlink — sync tools skip `*.nosync` names.
 
 Use `make check-all` when a change may behave differently across Python 3.12,
 3.13, and 3.14. It requires `uv`, can download interpreters, and uses isolated
