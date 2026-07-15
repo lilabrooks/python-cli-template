@@ -87,6 +87,40 @@ in this repo's own CI.
    building. The README you are reading describes the template — rewrite it
    for your project.
 
+## Design rationale
+
+Three deliberate decisions shape this repo:
+
+- **Stack and process are separate layers.** This template carries toolchain
+  decisions only. The operating contract — goal file, source-to-knowledge
+  mapping, session hooks, the milestone loop — arrives by running
+  claude-okf-repo-kit's installer on top, per project. That separation keeps
+  the template's release cadence (Python ecosystem churn) independent of the
+  kit's (process changes), and it is why no `CLAUDE.md`, `AGENTS.md`, or
+  agent config ships here.
+- **A walking skeleton, not file stubs.** The template is itself a working
+  CLI passing its own gate in its own CI, so it cannot rot silently: a stub
+  bag decays invisibly, a skeleton fails its CI the day it breaks.
+- **Scripts for what must never vary.** Extraction, rename, and layering are
+  deterministic mechanics encoded in `scripts/create-project` and guarded by
+  smoke tests — re-derived by no one, human or agent. Judgment work (your
+  README, your goal) is printed as next steps, never attempted.
+
+The chassis was seeded one time from spec-agent-cli and is maintained here.
+
+## Working with Claude Code and Codex
+
+Everything an agent runs here is plain bash and make — no agent-specific
+assumptions — so Claude Code and Codex use the template identically: run
+`scripts/create-project`, verify with `make check`. After the kit is
+installed on a created project, the kit ships Claude Code's stack
+(`CLAUDE.md`, `.claude/`); a Codex stack is an optional mirror the owner adds
+(`AGENTS.md`, `.codex/hooks/`, `.agents/skills/` — see spec-drift or
+spec-agent-cli for the worked pattern, and the kit README's second-agent
+section for the rules). The repository-health tests shipped by this template
+are pre-wired for that: when a Codex mirror exists they enforce byte-identical
+hooks and paired skills, and they skip cleanly when it doesn't.
+
 ## The walking skeleton
 
 ```bash

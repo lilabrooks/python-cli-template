@@ -172,7 +172,9 @@ Judgment steps this script cannot do:
   1. Rewrite README.md for the project (it still describes the template).
   2. Reset CHANGELOG.md's 0.1.0 entry to describe the project.
   3. Provide the goal: drop a finished docs/GOAL.md in, or run the goal
-     interview from Claude Code; then fill CLAUDE.md's master-objective and
+     interview from Claude Code (Codex users: the kit installs Claude Code's
+     stack; port AGENTS.md per the kit README's second-agent section, or fill
+     the goal by hand). Then fill the playbook's master-objective and
      verification-command brackets from it.
   4. If the CLI will not call language models, delete the provider layer
      (the README's "Deleting the model-provider layer" section lists every
