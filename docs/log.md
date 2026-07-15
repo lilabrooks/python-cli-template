@@ -14,12 +14,32 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-14
 
+- Raised the branch-coverage floor from 70% to 90% and made the coverage run
+  part of `make check` and `make check-all`; the cross-version gate now launches
+  isolated uv environments from a temporary directory without using or
+  replacing `.venv` or creating a lockfile.
+  Added a root `AGENTS.md` with the stack commands and safety rules Codex needs
+  on first use, tightened hook and skill mirror parity, added an installed
+  console-script test, and added a Python 3.14 CI smoke job for the complete
+  generated-project path.
+- Made uv the preferred generated-project setup: `create-project` now runs
+  `uv sync --all-extras`, writes the renamed project's `uv.lock`, and verifies
+  through `uv run make check`. Machines without uv keep the venv/pip path, and
+  `--pip` selects that fallback explicitly. CI exercises both paths. Corrected
+  all workflow checkout steps to the current `actions/checkout@v6` release,
+  set read-only repository permissions, fixed stale README layout details, and
+  removed the obsolete Snyk label from the dependency-scanner manifest.
+- Tightened generated-file safety: incomplete fences, symlink escapes,
+  mismatched file/target lists, and duplicate targets are rejected before a
+  write. Added regression tests for each case.
+- Audited `.gitignore`: added Codex's local `.codex-log/`, anchored build and
+  coverage reports to the repository root, and added repository-health tests
+  for ignored artifacts and intentionally trackable project files.
 - Documented the design rationale and agent usage in the README: why stack
-  and process are separate layers (and therefore why no agent config ships
-  in the template), why a walking skeleton beats file stubs, and why the
-  mechanics live in scripts. A new "Working with Claude Code and Codex"
-  section states that the template is agent-neutral bash/make, points at the
-  worked Codex-mirror pattern in spec-drift and spec-agent-cli, and notes the
+  and process are separate layers, why a walking skeleton beats file stubs,
+  and why the mechanics live in scripts. A new "Working with Claude Code and
+  Codex" section states that the template uses bash/make, points at the worked
+  Codex-mirror pattern in spec-drift and spec-agent-cli, and notes the
   pre-wired parity guards in the repository-health tests.
   `create-project`'s next-steps output now names the Codex path for the goal
   step. Docs only; no behavior change.

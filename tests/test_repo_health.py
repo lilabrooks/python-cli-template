@@ -129,23 +129,75 @@ def test_no_tracked_files_match_gitignore() -> None:
     )
 
 
-def test_codex_hooks_match_claude_hooks() -> None:
-    """The Codex hook mirror must stay byte-identical to the Claude hooks.
+def test_gitignore_covers_local_artifacts_without_hiding_project_files() -> None:
+    if shutil.which("git") is None or not (REPO_ROOT / ".git").exists():
+        pytest.skip("not a git checkout")
 
-    Lifecycle hooks enforce the same guardrails regardless of which agent
-    runs, so a hook present in both `.claude/hooks/` and `.codex/hooks/` must
-    match byte for byte. The Codex stack is optional: when `.codex/hooks/` is
-    absent the check no-ops, keeping a Claude-only checkout green.
+    def is_ignored(path: str) -> bool:
+        result = subprocess.run(
+            ["git", "check-ignore", "--no-index", "--quiet", path],
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        return result.returncode == 0
+
+    ignored = [
+        ".venv/bin/python",
+        "src/example/__pycache__/module.pyc",
+        "dist/package.whl",
+        "build/package/file.py",
+        ".coverage.worker",
+        "htmlcov/index.html",
+        "coverage.xml",
+        ".env.local",
+        ".codex/settings.local.json",
+        ".codex-log/session.jsonl",
+    ]
+    trackable = [
+        "uv.lock",
+        ".python-version",
+        ".env.example",
+        "AGENTS.md",
+        "AGENTS.override.md",
+        ".codex/config.toml",
+        ".codex/hooks/pre-tool.sh",
+        "src/dist/__init__.py",
+        "src/build/__init__.py",
+    ]
+
+    missing_ignores = [path for path in ignored if not is_ignored(path)]
+    unexpectedly_ignored = [path for path in trackable if is_ignored(path)]
+    assert not missing_ignores, f"local artifacts are not ignored: {missing_ignores}"
+    assert not unexpectedly_ignored, (
+        f"project files that should remain trackable are ignored: {unexpectedly_ignored}"
+    )
+
+
+def test_codex_hooks_match_claude_hooks() -> None:
+    """The Codex hook mirror must contain every Claude hook byte-for-byte.
+
+    The Codex stack is optional: when `.codex/hooks/` is absent the check
+    no-ops, keeping a Claude-only checkout green. Once the mirror exists, a
+    missing, extra, or changed hook is an error.
     """
     claude_hooks = REPO_ROOT / ".claude" / "hooks"
     codex_hooks = REPO_ROOT / ".codex" / "hooks"
     if not codex_hooks.is_dir():
         pytest.skip("no Codex hook mirror in this repo")
+
+    assert claude_hooks.is_dir(), ".codex/hooks exists without the source .claude/hooks directory"
+    claude_names = {path.name for path in claude_hooks.glob("*.sh") if path.is_file()}
+    codex_names = {path.name for path in codex_hooks.glob("*.sh") if path.is_file()}
+    assert claude_names == codex_names, (
+        "hook sets are not paired across the two agent stacks "
+        f"(only in .claude: {sorted(claude_names - codex_names)}; "
+        f"only in .codex: {sorted(codex_names - claude_names)})"
+    )
+
     mismatched: list[str] = []
-    for claude_hook in sorted(claude_hooks.glob("*.sh")):
-        codex_hook = codex_hooks / claude_hook.name
-        if codex_hook.is_file() and not filecmp.cmp(claude_hook, codex_hook, shallow=False):
-            mismatched.append(claude_hook.name)
+    for name in sorted(claude_names):
+        if not filecmp.cmp(claude_hooks / name, codex_hooks / name, shallow=False):
+            mismatched.append(name)
     assert not mismatched, (
         "Codex hooks have drifted from the Claude source of truth "
         f"(re-sync from .claude/hooks/): {mismatched}"
@@ -163,6 +215,9 @@ def test_codex_skills_pair_with_claude_skills() -> None:
     codex_skills = REPO_ROOT / ".agents" / "skills"
     if not codex_skills.is_dir():
         pytest.skip("no Codex skill mirror in this repo")
+    assert claude_skills.is_dir(), (
+        ".agents/skills exists without the source .claude/skills directory"
+    )
     claude_names = {p.name for p in claude_skills.glob("okf-*") if p.is_dir()}
     codex_names = {p.name for p in codex_skills.glob("okf-*") if p.is_dir()}
     assert claude_names == codex_names, (

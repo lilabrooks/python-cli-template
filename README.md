@@ -17,7 +17,7 @@ second, then the goal loop builds your actual tool.
   work out of the box; the template's own CI keeps every piece green, so the
   chassis cannot rot silently.
 - **The quality gate.** ruff (lint + format), mypy `strict`, pytest with a
-  70% branch-coverage floor, and docs validation — one `make check`, mirrored
+  90% branch-coverage floor, and docs validation — one `make check`, mirrored
   by three GitHub Actions workflows across Python 3.12–3.14.
 - **Repository-health tests.** The repo tests itself: the version must agree
   across `pyproject.toml`, the package, `CHANGELOG.md`, and docs; no tracked
@@ -47,13 +47,15 @@ bash scripts/create-project /path/to/your-tool your-tool-name
 It extracts this template's committed tree into the target (a fresh directory,
 or an existing repo that only carries goal-shaped content like `docs/GOAL.md`
 — colliding files are refused, an existing `.gitignore` is merged), renames
-the skeleton, git-inits if needed, creates a venv and runs `make check`,
+the skeleton, git-inits if needed, uses uv to create the environment and a
+project-specific `uv.lock`, and runs `make check`. When uv is unavailable,
+the script uses the venv/pip fallback; pass `--pip` to select it explicitly. It
 installs [claude-okf-repo-kit](https://github.com/lilabrooks/claude-okf-repo-kit)
 when a clone is available (`--kit /path`, auto-detected as a sibling, or
 `--no-kit`), removes the template-side tooling from the target, and prints the
 judgment steps that remain: project README and CHANGELOG, the goal, the
-playbook brackets. Its contract is guarded by `tests/test_create_project.py`
-in this repo's own CI.
+playbook brackets. Its mechanics are guarded by `tests/test_create_project.py`;
+CI also runs the complete uv and pip setup paths on Python 3.14.
 
 **Manual path** (the same sequence, step by step):
 
@@ -68,7 +70,16 @@ in this repo's own CI.
    This rewrites the package (`skeleton_cli`), distribution (`skeleton-cli`),
    and env-var prefix (`SKELETON_CLI`) everywhere, moves the source directory,
    and substitutes your `git config user.name` as owner in the docs.
-3. **Verify the gate:**
+3. **Create the environment and verify the gate with
+   [uv](https://docs.astral.sh/uv/):**
+
+   ```bash
+   uv sync --all-extras
+   uv run make check
+   ```
+
+   The generated `uv.lock` belongs to the new project and should be committed.
+   The portable fallback is:
 
    ```bash
    python3 -m venv .venv
@@ -92,12 +103,12 @@ in this repo's own CI.
 Three deliberate decisions shape this repo:
 
 - **Stack and process are separate layers.** This template carries toolchain
-  decisions only. The operating contract — goal file, source-to-knowledge
-  mapping, session hooks, the milestone loop — arrives by running
+  decisions plus a small `AGENTS.md` for setup, verification, and repository
+  safety. The operating contract — goal file, source-to-knowledge mapping,
+  session hooks, the milestone loop — arrives by running
   claude-okf-repo-kit's installer on top, per project. That separation keeps
   the template's release cadence (Python ecosystem churn) independent of the
-  kit's (process changes), and it is why no `CLAUDE.md`, `AGENTS.md`, or
-  agent config ships here.
+  kit's (process changes).
 - **A walking skeleton, not file stubs.** The template is itself a working
   CLI passing its own gate in its own CI, so it cannot rot silently: a stub
   bag decays invisibly, a skeleton fails its CI the day it breaks.
@@ -110,16 +121,16 @@ The chassis was seeded one time from spec-agent-cli and is maintained here.
 
 ## Working with Claude Code and Codex
 
-Everything an agent runs here is plain bash and make — no agent-specific
-assumptions — so Claude Code and Codex use the template identically: run
-`scripts/create-project`, verify with `make check`. After the kit is
-installed on a created project, the kit ships Claude Code's stack
-(`CLAUDE.md`, `.claude/`); a Codex stack is an optional mirror the owner adds
-(`AGENTS.md`, `.codex/hooks/`, `.agents/skills/` — see spec-drift or
-spec-agent-cli for the worked pattern, and the kit README's second-agent
-section for the rules). The repository-health tests shipped by this template
-are pre-wired for that: when a Codex mirror exists they enforce byte-identical
-hooks and paired skills, and they skip cleanly when it doesn't.
+Everything an agent runs here is uv, bash, and make, so Claude Code and Codex
+use the same mechanical path: run `scripts/create-project`, then verify with
+`uv run make check`. The root `AGENTS.md` gives Codex the stack commands and safety
+rules immediately. After the kit is installed on a created project, it ships
+Claude Code's process stack (`CLAUDE.md`, `.claude/`); the owner can mirror its
+workflow-specific hooks and skills into `.codex/hooks/` and `.agents/skills/`
+(see spec-drift or spec-agent-cli for a worked pattern, and the kit README's
+second-agent section for the rules). When a Codex mirror exists, repository
+health tests require the complete hook set with byte-identical contents and a
+paired skill set.
 
 ## The walking skeleton
 
@@ -152,10 +163,12 @@ you what you missed.
 ## Layout
 
 ```
+├── AGENTS.md            # Codex setup, verification, and safety instructions
 ├── .github/workflows/   # quality, tests, coverage — Python 3.12–3.14 matrix
-├── docs/                # knowledge bundle root (starts empty by design)
+├── docs/                # knowledge bundle indexes and documentation log
 ├── scripts/
 │   ├── check-okf-docs.py   # stdlib-only docs validator, wired into make check
+│   ├── create-project      # preferred one-command project generator
 │   └── rename-project      # single-use parameterization, delete after use
 ├── src/skeleton_cli/    # the walking skeleton
 └── tests/               # CLI, provider-layer, and repository-health tests

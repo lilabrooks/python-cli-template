@@ -95,7 +95,9 @@ cat <<'EOF'
 Next steps:
   1. Rewrite README.md for your project (it still describes the template).
   2. Reset CHANGELOG.md's 0.1.0 entry to describe your project.
-  3. Recreate the venv and verify: python3 -m venv .venv &&
+  3. Create the environment and verify (preferred):
+     uv sync --all-extras && uv run make check
+     Fallback: python3 -m venv .venv &&
      .venv/bin/pip install -e ".[dev,anthropic,openai]" && make check
   4. If your CLI does not call language models, delete the provider layer:
      the agents/, config/, core/, providers/, runtime/ packages, their tests,

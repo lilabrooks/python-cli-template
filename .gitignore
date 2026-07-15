@@ -1,22 +1,30 @@
+# Python environments and caches
 .venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-dist/
-build/
+
+# Packaging and coverage output
+/dist/
+/build/
 *.egg-info/
 .coverage
 .coverage.*
-htmlcov/
-coverage.xml
+/htmlcov/
+/coverage.xml
+
+# Local secrets and operating-system files
 .env
 .DS_Store
+.env.*
+!.env.example
+
+# Agent-local state
 .claude/settings.local.json
 CLAUDE.local.md
 .codex/settings.local.json
 Codex.local.md
+.codex-log/
 .okf-kit-backups/
-.env.*
-!.env.example

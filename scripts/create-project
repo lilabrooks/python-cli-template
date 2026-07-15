@@ -2,15 +2,16 @@
 # Stamp this template into a new project directory, deterministically.
 #
 # Usage:
-#   bash scripts/create-project /path/to/target <dist-name> [--kit /path/to/claude-okf-repo-kit | --no-kit] [--skip-venv]
+#   bash scripts/create-project /path/to/target <dist-name> [--kit /path/to/claude-okf-repo-kit | --no-kit] [--pip] [--skip-venv]
 #
 # Runs the whole mechanical flow in order: extract this template's committed
 # tree into the target, rename the skeleton to <dist-name>, merge (never
-# clobber) an existing .gitignore, git-init if needed, create a venv and run
-# `make check`, install the claude-okf-repo-kit operating contract when a kit
-# clone is available, and delete the single-use template scripts from the
-# target. What it cannot do — the project README, CHANGELOG, goal, and
-# playbook content — it prints as next steps.
+# clobber) an existing .gitignore, git-init if needed, create the development
+# environment with uv (or the venv/pip fallback) and run `make check`, install
+# the claude-okf-repo-kit operating contract when a kit clone is available,
+# and delete the single-use template scripts from the target. What it cannot
+# do — the project README, CHANGELOG, goal, and playbook content — it prints as
+# next steps.
 #
 # The target may be a fresh directory or an existing repo that only carries
 # goal-shaped content (like docs/GOAL.md): any file the template would land on
@@ -41,6 +42,7 @@ shift 2
 KIT_DIR=""
 NO_KIT=0
 SKIP_VENV=0
+USE_PIP=0
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --kit)
@@ -53,6 +55,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --skip-venv)
       SKIP_VENV=1
+      shift
+      ;;
+    --pip)
+      USE_PIP=1
       shift
       ;;
     *)
@@ -130,15 +136,24 @@ bash "$TARGET/scripts/rename-project" "$DIST" | sed -n '1,2p'
 rm -f "$TARGET/scripts/rename-project" "$TARGET/scripts/create-project" \
   "$TARGET/tests/test_create_project.py"
 
-venv_note="skipped (--skip-venv); run: python3 -m venv .venv && .venv/bin/pip install -e \".[dev,anthropic,openai]\" && make check"
+venv_note="skipped (--skip-venv); preferred: uv sync --all-extras && uv run make check; fallback: python3 -m venv .venv && .venv/bin/pip install -e \".[dev,anthropic,openai]\" && make check"
 if [ "$SKIP_VENV" -eq 0 ]; then
-  python3 -m venv "$TARGET/.venv"
-  "$TARGET/.venv/bin/pip" install -q -e "$TARGET[dev,anthropic,openai]"
-  if make -C "$TARGET" check >/dev/null 2>&1; then
-    venv_note="venv created; make check passed"
+  if [ "$USE_PIP" -eq 0 ] && command -v uv >/dev/null 2>&1; then
+    if (cd "$TARGET" && uv sync --all-extras --quiet && uv run make check >/dev/null 2>&1); then
+      venv_note="uv synced all extras; uv.lock created; make check passed"
+    else
+      printf 'uv setup or make check FAILED in the target; inspect before continuing:\n  cd %s && uv sync --all-extras && uv run make check\n' "$TARGET" >&2
+      exit 1
+    fi
   else
-    printf 'make check FAILED in the target; inspect before continuing:\n  cd %s && make check\n' "$TARGET" >&2
-    exit 1
+    python3 -m venv "$TARGET/.venv"
+    "$TARGET/.venv/bin/pip" install -q -e "${TARGET}[dev,anthropic,openai]"
+    if make -C "$TARGET" check >/dev/null 2>&1; then
+      venv_note="venv/pip environment created; make check passed"
+    else
+      printf 'make check FAILED in the target; inspect before continuing:\n  cd %s && make check\n' "$TARGET" >&2
+      exit 1
+    fi
   fi
 fi
 
@@ -172,12 +187,12 @@ Judgment steps this script cannot do:
   1. Rewrite README.md for the project (it still describes the template).
   2. Reset CHANGELOG.md's 0.1.0 entry to describe the project.
   3. Provide the goal: drop a finished docs/GOAL.md in, or run the goal
-     interview from Claude Code (Codex users: the kit installs Claude Code's
-     stack; port AGENTS.md per the kit README's second-agent section, or fill
-     the goal by hand). Then fill the playbook's master-objective and
-     verification-command brackets from it.
+     interview from Claude Code. AGENTS.md already carries Codex's stack
+     commands; port any kit-specific workflow rules, hooks, and skills per the
+     kit README's second-agent section, or fill the goal by hand. Then fill the
+     playbook's master-objective and verification-command brackets from it.
   4. If the CLI will not call language models, delete the provider layer
      (the README's "Deleting the model-provider layer" section lists every
      piece).
-  5. Review and commit.
+  5. Review and commit (including uv.lock when uv created it).
 EOF

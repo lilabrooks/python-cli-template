@@ -41,6 +41,9 @@ def parse_generated_files(text: str) -> list[GeneratedFile]:
         while index < len(lines) and lines[index].strip() != _FENCE_PREFIX:
             content_lines.append(lines[index])
             index += 1
+
+        if index >= len(lines):
+            break  # incomplete fenced block; do not treat partial output as a file
         index += 1  # skip the closing fence
 
         if path:
@@ -51,10 +54,21 @@ def parse_generated_files(text: str) -> list[GeneratedFile]:
 
 def resolve_target_path(out_dir: Path, generated: GeneratedFile) -> Path:
     relative = Path(generated.path)
-    if not generated.path.strip() or relative.is_absolute() or ".." in relative.parts:
+    if (
+        not generated.path.strip()
+        or not relative.parts
+        or relative.is_absolute()
+        or ".." in relative.parts
+    ):
         msg = f"Unsafe or invalid file path in agent output: {generated.path!r}"
         raise ValueError(msg)
-    return out_dir / relative
+
+    root = out_dir.resolve(strict=False)
+    target = out_dir / relative
+    if not target.resolve(strict=False).is_relative_to(root):
+        msg = f"Unsafe or invalid file path in agent output: {generated.path!r}"
+        raise ValueError(msg)
+    return target
 
 
 def write_generated_files(
@@ -63,6 +77,15 @@ def write_generated_files(
     *,
     force: bool = False,
 ) -> None:
+    if len(files) != len(targets):
+        msg = "Generated files and target paths must have the same length"
+        raise ValueError(msg)
+
+    normalized_targets = [target.resolve(strict=False) for target in targets]
+    if len(set(normalized_targets)) != len(normalized_targets):
+        msg = "Generated files contain duplicate target paths"
+        raise ValueError(msg)
+
     if not force:
         existing = [target for target in targets if target.exists()]
         if existing:

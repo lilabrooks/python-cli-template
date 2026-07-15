@@ -4,8 +4,9 @@
 #                    active interpreter (whatever your .venv has). This is the
 #                    everyday command.
 #   make check-all   Run the same checks across every supported Python version.
-#                    Uses uv to fetch interpreters on demand; CI already does
-#                    this on push, so reach for it mainly to reproduce a
+#                    Uses uv with isolated environments, leaving the project's
+#                    .venv and lockfiles untouched. CI already does this on
+#                    push, so reach for it mainly to reproduce a
 #                    version-specific failure locally.
 #
 # Individual targets (lint, typecheck, test, okf, coverage) are available too.
@@ -15,10 +16,11 @@ RUFF ?= $(if $(wildcard .venv/bin/ruff),.venv/bin/ruff,ruff)
 MYPY ?= $(if $(wildcard .venv/bin/mypy),.venv/bin/mypy,mypy)
 PYTEST ?= $(if $(wildcard .venv/bin/pytest),.venv/bin/pytest,pytest)
 VERSIONS ?= 3.12 3.13 3.14
+UV_RUN ?= uv run --isolated
 
 .PHONY: check lint format typecheck test okf coverage check-all
 
-check: lint typecheck test okf
+check: lint typecheck coverage okf
 
 lint:
 	$(RUFF) check .
@@ -49,12 +51,22 @@ check-all:
 		echo "check-all needs uv (https://docs.astral.sh/uv/). Install it, or run 'make check' per interpreter."; \
 		exit 1; \
 	}
-	@for v in $(VERSIONS); do \
+	@root="$(CURDIR)"; scratch=$$(mktemp -d); \
+	trap 'rm -rf "$$scratch"' EXIT; \
+	for v in $(VERSIONS); do \
 		echo "=== Python $$v ==="; \
-		uv run --python $$v --extra dev --extra anthropic --extra openai -- ruff check . && \
-		uv run --python $$v --extra dev --extra anthropic --extra openai -- ruff format --check . && \
-		uv run --python $$v --extra dev --extra anthropic --extra openai -- mypy && \
-		uv run --python $$v --extra dev --extra anthropic --extra openai -- pytest && \
-		uv run --python $$v --extra dev --extra anthropic --extra openai -- python scripts/check-okf-docs.py || exit 1; \
+		(cd "$$scratch" && $(UV_RUN) \
+			--with-editable "$$root" \
+			--with-requirements "$$root/requirements.txt" \
+			--python "$$v" -- sh -eu -c ' \
+				cd "$$1"; \
+				ruff check .; \
+				ruff format --check .; \
+				mypy; \
+				coverage erase; \
+				coverage run -m pytest; \
+				coverage report; \
+				python scripts/check-okf-docs.py \
+			' sh "$$root") || exit 1; \
 	done
 	@echo "All versions passed."

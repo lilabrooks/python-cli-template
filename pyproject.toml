@@ -97,4 +97,4 @@ source = ["skeleton_cli"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 70
+fail_under = 90

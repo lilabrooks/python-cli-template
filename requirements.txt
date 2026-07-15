@@ -1,8 +1,9 @@
-# Snyk-friendly dependency manifest.
+# Dependency-scanner manifest.
 #
 # Runtime dependencies are intentionally empty in pyproject.toml. These entries
 # mirror the optional provider packages and development tools declared there so
-# GitHub-based Snyk scans have concrete Python packages to inspect.
+# Dependabot and other repository scanners have concrete Python packages to
+# inspect.
 
 anthropic>=0.69
 openai>=1.0

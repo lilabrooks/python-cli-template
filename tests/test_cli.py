@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from skeleton_cli import __version__
@@ -59,3 +63,19 @@ def test_missing_command_is_a_usage_error() -> None:
         main([])
 
     assert excinfo.value.code == 2
+
+
+def test_installed_console_script_reports_version() -> None:
+    suffix = ".exe" if sys.platform == "win32" else ""
+    executable = Path(sys.executable).with_name(f"skeleton-cli{suffix}")
+    assert executable.is_file(), f"console script is not installed: {executable}"
+
+    result = subprocess.run(
+        [str(executable), "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == f"skeleton-cli {__version__}"

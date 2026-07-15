@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   pytest:
     runs-on: ubuntu-latest
@@ -14,7 +17,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -27,3 +30,31 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+  template-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: "pip"
+
+      - name: Install uv
+        run: python -m pip install uv
+
+      - name: Create and verify a generated project with uv
+        run: |
+          bash scripts/create-project "$RUNNER_TEMP/uv-tool" uv-tool --no-kit
+          test -f "$RUNNER_TEMP/uv-tool/uv.lock"
+          "$RUNNER_TEMP/uv-tool/.venv/bin/uv-tool" --version
+
+      - name: Create and verify the pip fallback
+        run: |
+          bash scripts/create-project "$RUNNER_TEMP/pip-tool" pip-tool --no-kit --pip
+          test ! -e "$RUNNER_TEMP/pip-tool/uv.lock"
+          "$RUNNER_TEMP/pip-tool/.venv/bin/pip-tool" --version

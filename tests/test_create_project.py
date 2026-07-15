@@ -2,11 +2,12 @@
 
 The script is the deterministic path agents and humans run to stamp this
 template into a new project, so its contract is guarded here: extraction from
-the committed tree, rename, .gitignore merge, collision refusal, and removal
-of the single-use scripts. The venv/gate and kit steps are exercised with
-their skip flags — the full gate already runs against this repo itself.
+the committed tree, rename, .gitignore merge, collision refusal, uv setup,
+and removal of the single-use scripts. CI exercises the complete uv and pip
+paths against a generated project.
 """
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -21,19 +22,28 @@ def _require_git_checkout() -> None:
         pytest.skip("not a git checkout")
 
 
-def _create(target: Path, dist: str) -> subprocess.CompletedProcess[str]:
+def _create(
+    target: Path,
+    dist: str,
+    *,
+    skip_venv: bool = True,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        "bash",
+        str(REPO_ROOT / "scripts" / "create-project"),
+        str(target),
+        dist,
+    ]
+    if skip_venv:
+        command.append("--skip-venv")
+    command.append("--no-kit")
     return subprocess.run(
-        [
-            "bash",
-            str(REPO_ROOT / "scripts" / "create-project"),
-            str(target),
-            dist,
-            "--skip-venv",
-            "--no-kit",
-        ],
+        command,
         capture_output=True,
         text=True,
         check=False,
+        env=env,
     )
 
 
@@ -69,6 +79,40 @@ def test_removes_single_use_scripts_from_target(tmp_path: Path) -> None:
     assert not (target / "scripts" / "create-project").exists()
     assert not (target / "tests" / "test_create_project.py").exists()
     assert (target / "scripts" / "check-okf-docs.py").is_file()
+
+
+def test_prefers_uv_and_writes_project_lock(tmp_path: Path) -> None:
+    _require_git_checkout()
+    target = tmp_path / "new-proj"
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_uv = fake_bin / "uv"
+    fake_uv.write_text(
+        """#!/bin/sh
+case "$1" in
+  sync)
+    mkdir -p .venv/bin
+    printf 'version = 1\\n' > uv.lock
+    ;;
+  run)
+    ;;
+  *)
+    exit 2
+    ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    fake_uv.chmod(0o755)
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+
+    result = _create(target, "sample-tool", skip_venv=False, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert (target / ".venv").is_dir()
+    assert (target / "uv.lock").read_text(encoding="utf-8") == "version = 1\n"
+    assert "uv synced all extras; uv.lock created; make check passed" in result.stdout
 
 
 def test_merges_existing_gitignore_and_keeps_goal(tmp_path: Path) -> None:
