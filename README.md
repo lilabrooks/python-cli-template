@@ -1,5 +1,12 @@
 # python-cli-template
 
+[![Code quality](https://github.com/lilabrooks/python-cli-template/actions/workflows/code-quality.yml/badge.svg?branch=main)](https://github.com/lilabrooks/python-cli-template/actions/workflows/code-quality.yml)
+[![Tests](https://github.com/lilabrooks/python-cli-template/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/lilabrooks/python-cli-template/actions/workflows/tests.yml)
+[![Coverage](https://github.com/lilabrooks/python-cli-template/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/lilabrooks/python-cli-template/actions/workflows/coverage.yml)
+![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![uv](https://img.shields.io/badge/uv-supported-654ff0)
+
 A walking skeleton for Python 3.12+ command-line tools: a minimal working CLI
 (`skeleton-cli`) that already passes a production-grade quality gate, so a new
 project starts at "green" instead of at "empty directory".
