@@ -6,7 +6,8 @@
 # clobber) an existing .gitignore, git-init if needed, create the development
 # environment with uv (or the venv/pip fallback) and run `make check`, install
 # the claude-okf-repo-kit operating contract when a kit clone is available,
-# and delete the single-use template scripts from the target. What it cannot
+# rerun the gate after installation, and delete the single-use template scripts
+# from the target. What it cannot
 # do — the project README, CHANGELOG, goal, and playbook content — it prints as
 # next steps.
 #
@@ -137,7 +138,7 @@ else
   gitignore_note="installed template .gitignore"
 fi
 
-if [ ! -d "$TARGET/.git" ]; then
+if ! git -C "$TARGET" rev-parse --git-dir >/dev/null 2>&1; then
   git -C "$TARGET" init -q
   git_note="initialized a new git repository"
 else
@@ -173,6 +174,7 @@ if [ "$SKIP_VENV" -eq 0 ]; then
 fi
 
 kit_note="not installed; run when ready: bash /path/to/claude-okf-repo-kit/scripts/update-existing-repo $TARGET"
+kit_installed=0
 if [ "$NO_KIT" -eq 0 ] && [ -z "$KIT_DIR" ] && [ -d "$TEMPLATE_ROOT/../claude-okf-repo-kit/scripts" ]; then
   KIT_DIR="$(cd "$TEMPLATE_ROOT/../claude-okf-repo-kit" && pwd)"
 fi
@@ -184,9 +186,23 @@ if [ -n "$KIT_DIR" ]; then
   if [ -f "$KIT_DIR/scripts/update-existing-repo" ]; then
     bash "$KIT_DIR/scripts/update-existing-repo" "$TARGET" >/dev/null
     kit_note="claude-okf-repo-kit installed from $KIT_DIR"
+    kit_installed=1
   else
     printf 'Kit path %s has no scripts/update-existing-repo; skipping kit install.\n' "$KIT_DIR" >&2
   fi
+fi
+
+if [ "$SKIP_VENV" -eq 0 ] && [ "$kit_installed" -eq 1 ]; then
+  if [ "$USE_PIP" -eq 0 ] && command -v uv >/dev/null 2>&1; then
+    if ! (cd "$TARGET" && uv run make check >/dev/null 2>&1); then
+      printf 'Post-kit make check FAILED in the target; inspect before continuing:\n  cd %s && uv run make check\n' "$TARGET" >&2
+      exit 1
+    fi
+  elif ! make -C "$TARGET" check >/dev/null 2>&1; then
+    printf 'Post-kit make check FAILED in the target; inspect before continuing:\n  cd %s && make check\n' "$TARGET" >&2
+    exit 1
+  fi
+  kit_note="$kit_note; post-kit make check passed"
 fi
 
 PKG="${DIST//-/_}"
@@ -200,7 +216,8 @@ Kit:    $kit_note
 
 Judgment steps this script cannot do:
   1. Rewrite README.md for the project (it still describes the template).
-  2. Reset CHANGELOG.md's 0.1.0 entry to describe the project.
+  2. Review CHANGELOG.md's new 0.1.0 entry, the reset docs/log.md,
+     maintainer contact details, and LICENSE ownership.
   3. Provide the goal: drop a finished docs/GOAL.md in, or run the goal
      interview from Claude Code. AGENTS.md already carries Codex's stack
      commands; port any kit-specific workflow rules, hooks, and skills per the

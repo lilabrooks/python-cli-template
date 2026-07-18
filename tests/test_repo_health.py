@@ -52,7 +52,7 @@ def test_package_version_matches_pyproject() -> None:
 
 def test_changelog_latest_entry_matches_pyproject() -> None:
     changelog = (REPO_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-    match = re.search(r"^## \[(\d+\.\d+\.\d+)\]", changelog, flags=re.MULTILINE)
+    match = re.search(r"^## \[?(\d+\.\d+\.\d+)\]?", changelog, flags=re.MULTILINE)
     assert match is not None, "CHANGELOG.md has no '## [x.y.z]' release heading"
     assert match.group(1) == declared_version(), (
         f"CHANGELOG.md latest entry is {match.group(1)}, pyproject.toml says {declared_version()}"

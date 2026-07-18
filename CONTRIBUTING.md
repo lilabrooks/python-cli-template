@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping keep this template boring in the best way: green checks,
+Thanks for helping keep this project boring in the best way: green checks,
 small changes, and no mystery setup.
 
 ## Local setup
@@ -26,7 +26,8 @@ environment setup script so it runs while network access is available.
 ## Before opening a pull request
 
 - Run `make check`.
-- Keep the generated-project path working through `scripts/create-project`.
+- In the template repository, keep the generated-project path working through
+  `scripts/create-project`.
 - Update `CHANGELOG.md` for user-visible changes.
 - Mirror dependency changes between `pyproject.toml` and `requirements.txt`
   when optional extras change.
@@ -35,12 +36,12 @@ environment setup script so it runs while network access is available.
 
 ## Change style
 
-Prefer small, direct patches. This repository is a template, so every extra
-choice becomes something copied into new projects. Add defaults only when they
-are useful for most Python CLI tools.
+Prefer small, direct patches. In the template repository, every extra choice
+is copied into new projects, so defaults should be useful for most Python CLI
+tools.
 
 ## Generated projects
 
-When changing setup scripts, test at least one generated project. The CI smoke
-test covers both uv and pip paths, but a local generated project is often the
-fastest way to catch awkward output or missing cleanup.
+When changing the template's setup scripts, test at least one generated
+project. CI covers both uv and pip paths, and a local generated project catches
+awkward output or missing cleanup quickly.

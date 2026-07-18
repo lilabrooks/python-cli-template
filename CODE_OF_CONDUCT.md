@@ -26,6 +26,5 @@ Examples of unacceptable behavior:
 The maintainer may edit, hide, or remove comments and may block people from the
 project when behavior makes collaboration unsafe or unworkable.
 
-If you need to report conduct concerns, contact the maintainer privately through
-GitHub. Include links, screenshots, or dates when they help explain what
-happened.
+If you need to report conduct concerns, email `lila.m.brooks@gmail.com`.
+Include links, screenshots, or dates when they help explain what happened.

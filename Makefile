@@ -19,12 +19,15 @@ PYTEST ?= $(if $(wildcard .venv/bin/pytest),.venv/bin/pytest,pytest)
 VERSIONS ?= 3.12 3.13 3.14
 UV_RUN ?= uv run --isolated
 
-.PHONY: check check-env lint format typecheck test okf coverage check-all
+.PHONY: check check-env shell lint format typecheck test okf coverage check-all
 
-check: check-env lint typecheck coverage okf
+check: check-env shell lint typecheck coverage okf
 
 check-env:
 	$(PYTHON) scripts/check-env.py
+
+shell:
+	bash -n scripts/create-project scripts/rename-project
 
 lint:
 	$(RUFF) check .

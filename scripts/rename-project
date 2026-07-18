@@ -11,7 +11,7 @@
 # The script rewrites the three skeleton tokens (skeleton-cli, skeleton_cli,
 # SKELETON_CLI) across every tracked file except itself and LICENSE, moves
 # src/skeleton_cli/ to the new package directory, and substitutes the template
-# owner's name in docs frontmatter and pyproject with `git config user.name`.
+# owner's name and contact details using the local Git configuration.
 # LICENSE is left untouched: relicensing is a deliberate act, not a rename.
 
 set -euo pipefail
@@ -42,6 +42,8 @@ PKG="${DIST//-/_}"
 ENV_PREFIX="$(printf '%s' "$PKG" | tr '[:lower:]' '[:upper:]')"
 TEMPLATE_OWNER="Lila Brooks"
 NEW_OWNER="$(git -C "$ROOT" config user.name 2>/dev/null || true)"
+TEMPLATE_EMAIL="lila.m.brooks@gmail.com"
+NEW_EMAIL="$(git -C "$ROOT" config user.email 2>/dev/null || true)"
 
 if [ -d "$ROOT/src/$PKG" ] && [ "$PKG" != "skeleton_cli" ]; then
   printf 'src/%s already exists; refusing to overwrite.\n' "$PKG" >&2
@@ -54,6 +56,10 @@ target_files() {
   find "$ROOT" -type f \
     ! -path "$ROOT/.git/*" \
     ! -path "$ROOT/.venv/*" \
+    ! -path "$ROOT/.venv.nosync/*" \
+    ! -path "$ROOT/.mypy_cache/*" \
+    ! -path "$ROOT/.pytest_cache/*" \
+    ! -path "$ROOT/.ruff_cache/*" \
     ! -name 'rename-project' \
     ! -name 'LICENSE' \
     ! -name '*.pyc'
@@ -61,11 +67,12 @@ target_files() {
 
 substitute() {
   local file="$1"
-  python3 - "$file" "$DIST" "$PKG" "$ENV_PREFIX" "$TEMPLATE_OWNER" "${NEW_OWNER:-}" <<'PY'
+  python3 - "$file" "$DIST" "$PKG" "$ENV_PREFIX" "$TEMPLATE_OWNER" "${NEW_OWNER:-}" \
+    "$TEMPLATE_EMAIL" "${NEW_EMAIL:-}" <<'PY'
 import sys
 from pathlib import Path
 
-path, dist, pkg, env_prefix, template_owner, new_owner = sys.argv[1:7]
+path, dist, pkg, env_prefix, template_owner, new_owner, template_email, new_email = sys.argv[1:9]
 p = Path(path)
 try:
     text = p.read_text(encoding="utf-8")
@@ -77,6 +84,8 @@ text = text.replace("skeleton-cli", dist)
 text = text.replace("SKELETON_CLI", env_prefix)
 if new_owner and new_owner != template_owner:
     text = text.replace(template_owner, new_owner)
+if new_email and new_email != template_email:
+    text = text.replace(template_email, new_email)
 if text != original:
     p.write_text(text, encoding="utf-8")
 PY
@@ -92,16 +101,84 @@ if [ -d "$ROOT/src/skeleton_cli" ] && [ "$PKG" != "skeleton_cli" ]; then
   mv "$ROOT/src/skeleton_cli" "$ROOT/src/$PKG"
 fi
 
+# Start the generated project at its own 0.1.0 release and replace the
+# template's documentation history. Repository URLs remain a README judgment
+# step because a local project may not have a remote yet.
+PROJECT_DATE="$(date +%F)"
+python3 - "$ROOT" "$PKG" "$PROJECT_DATE" "$TEMPLATE_OWNER" "${NEW_OWNER:-}" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root_arg, package, project_date, template_owner, configured_owner = sys.argv[1:6]
+root = Path(root_arg)
+owner = configured_owner or template_owner
+
+pyproject = root / "pyproject.toml"
+text = pyproject.read_text(encoding="utf-8")
+text = re.sub(r'(?m)^version = "[^"]+"$', 'version = "0.1.0"', text, count=1)
+pyproject.write_text(text, encoding="utf-8")
+
+package_init = root / "src" / package / "__init__.py"
+text = package_init.read_text(encoding="utf-8")
+text = re.sub(r'(?m)^__version__ = "[^"]+"$', '__version__ = "0.1.0"', text, count=1)
+package_init.write_text(text, encoding="utf-8")
+
+(root / "CHANGELOG.md").write_text(
+    f"""# Changelog
+
+All notable changes to this project are documented here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+## 0.1.0 - {project_date}
+
+### Added
+
+- Initial project skeleton.
+""",
+    encoding="utf-8",
+)
+
+(root / "docs" / "log.md").write_text(
+    f"""---
+title: Documentation log
+type: log
+status: current
+date: {project_date}
+owner: {owner}
+deciders: [{owner}]
+tags: [documentation, log]
+---
+
+# Documentation log
+
+Dated changes to the docs bundle, newest first.
+
+## {project_date}
+
+- Started the project documentation bundle from the Python CLI template.
+""",
+    encoding="utf-8",
+)
+PY
+
 printf 'Renamed the skeleton to %s (package %s, env prefix %s_*) across %d files.\n' \
   "$DIST" "$PKG" "$ENV_PREFIX" "$count"
 if [ -n "$NEW_OWNER" ] && [ "$NEW_OWNER" != "$TEMPLATE_OWNER" ]; then
   printf 'Owner set to %s in docs and pyproject (LICENSE left as-is).\n' "$NEW_OWNER"
 fi
+if [ -z "$NEW_EMAIL" ]; then
+  printf 'No git user.email found; review maintainer contact details in SECURITY.md and CODE_OF_CONDUCT.md.\n'
+fi
 cat <<'EOF'
 
 Next steps:
   1. Rewrite README.md for your project (it still describes the template).
-  2. Reset CHANGELOG.md's 0.1.0 entry to describe your project.
+  2. Review CHANGELOG.md's new 0.1.0 entry, the reset docs/log.md,
+     maintainer contact details, and LICENSE ownership.
   3. Create the environment and verify (preferred):
      uv sync --all-extras && uv run make check
      Fallback: python3 -m venv .venv &&

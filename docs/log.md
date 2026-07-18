@@ -2,7 +2,7 @@
 title: Documentation log
 type: log
 status: current
-date: 2026-07-14
+date: 2026-07-17
 owner: Lila Brooks
 deciders: [Lila Brooks]
 tags: [documentation, log]
@@ -11,6 +11,15 @@ tags: [documentation, log]
 # Documentation log
 
 Dated changes to the docs bundle, newest first.
+
+## 2026-07-17
+
+- Prepared the repository for public template use: generalized security and
+  contribution guidance for generated projects, added support and contributor
+  forms, documented the Bash/Make platform boundary, and clarified that the
+  example wheel validates the chassis rather than distributing the generator.
+  Project renaming now starts a fresh changelog and documentation log, while
+  package and CI checks cover the complete source archive.
 
 ## 2026-07-14
 

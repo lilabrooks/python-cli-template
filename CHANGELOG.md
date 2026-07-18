@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-17
+
 ### Added
 
 - Root `AGENTS.md` with Codex setup, verification, and repository-safety
@@ -21,6 +23,10 @@ All notable changes to this project are documented here. The format is based on 
 - Canonical GitHub comparison links for changelog release headings.
 - Repository community docs: `SECURITY.md`, `CONTRIBUTING.md`, and
   `CODE_OF_CONDUCT.md`.
+- `SUPPORT.md`, structured bug, feature, and question forms, and a pull-request
+  checklist for public contributors.
+- Distribution smoke coverage that installs the wheel and runs the test suite
+  from the built source archive.
 
 ### Changed
 
@@ -31,8 +37,8 @@ All notable changes to this project are documented here. The format is based on 
 - Codex hook and skill mirror checks now reject missing source directories,
   missing mirror entries, and extra mirror entries.
 - CI exercises both generated-project setup paths: uv and venv/pip.
-- GitHub Actions now use the current `actions/checkout@v6` release instead of
-  the nonexistent v7 tag and declare read-only repository permissions.
+- GitHub Actions use `actions/checkout@v7` and `actions/setup-python@v6`, pinned
+  to verified full commit SHAs, with read-only repository permissions.
 - Corrected stale README layout details and the dependency manifest's obsolete
   Snyk label.
 - Generated-file parsing and writes now reject incomplete fences, symlink path
@@ -52,6 +58,16 @@ All notable changes to this project are documented here. The format is based on 
 - The environment preflight detects conflict copies of tool directories
   themselves and avoids double-reporting a virtual environment reached through
   both `.venv` and `.venv.nosync`.
+- Generated projects now start at version 0.1.0 with fresh changelog and
+  documentation history, preserve existing Git worktrees, and rerun the gate
+  after optional kit installation.
+- Source archives now include every file required by their bundled tests and
+  repository gate.
+- CI limits push runs to `main` and release tags, cancels superseded runs,
+  checks shell syntax, applies job timeouts, and verifies built distributions.
+- Community and support guidance is safe to copy into generated projects, and
+  the README states the supported project-creation platforms and package
+  publishing boundary.
 
 ## [0.1.1] - 2026-07-14
 
@@ -84,6 +100,7 @@ All notable changes to this project are documented here. The format is based on 
   SDKs as optional extras with deferred imports), environment-only settings,
   and safe-by-default file writes.
 
-[Unreleased]: https://github.com/lilabrooks/python-cli-template/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/lilabrooks/python-cli-template/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/lilabrooks/python-cli-template/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/lilabrooks/python-cli-template/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/lilabrooks/python-cli-template/releases/tag/v0.1.0

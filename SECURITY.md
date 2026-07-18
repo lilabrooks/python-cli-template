@@ -2,18 +2,15 @@
 
 ## Supported versions
 
-This template tracks the current `main` branch. Released tags are kept for
-history, but security fixes land on `main` first.
+This project tracks the current `main` branch. Released tags are kept for
+history, and security fixes land on `main` first.
 
 ## Reporting a vulnerability
 
-Please report security issues privately through GitHub Security Advisories for
-this repository:
-
-https://github.com/lilabrooks/python-cli-template/security/advisories/new
-
-If GitHub advisories are unavailable, contact the maintainer through the email
-listed in the repository's Git commit metadata. Please include:
+Please report security issues privately through this repository's **Security**
+tab by choosing **Report a vulnerability**. If private vulnerability reporting
+is unavailable, email the maintainer at `lila.m.brooks@gmail.com`. Please
+include:
 
 - A short description of the issue.
 - Steps to reproduce it.

@@ -11,6 +11,10 @@ A walking skeleton for Python 3.12+ command-line tools: a minimal working CLI
 (`skeleton-cli`) that already passes a production-grade quality gate, so a new
 project starts at "green" instead of at "empty directory".
 
+Project creation is supported on macOS, Linux, and Windows through WSL because
+the setup path uses Bash and Make. The generated Python package is otherwise
+OS-independent, but native Windows project creation is not currently tested.
+
 This is a **stack template** — it carries toolchain decisions, not process.
 It pairs with (but does not require)
 [claude-okf-repo-kit](https://github.com/lilabrooks/claude-okf-repo-kit),
@@ -111,6 +115,10 @@ created because Python console-script shebangs cannot portably use them.
 5. Replace the `hello` command with your tool's real surface and start
    building. The README you are reading describes the template — rewrite it
    for your project.
+
+The build metadata exists so this chassis can prove its wheel and source
+archive. This repository is distributed as a GitHub template; the example
+`skeleton-cli` package is not the project generator.
 
 ## Design rationale
 

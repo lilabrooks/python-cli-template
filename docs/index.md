@@ -19,8 +19,8 @@ recorded in [log.md](log.md), newest first.
 | [specs/](specs/index.md) | Component specifications: how the shipped code behaves |
 | [adr/](adr/index.md) | Architecture decision records: why the codebase is shaped this way |
 
-This bundle starts empty by design: the template carries the stack, and the
-knowledge arrives with your project. Installing
+This bundle starts empty by design. Add specifications and decisions as the
+project takes shape. Installing
 [claude-okf-repo-kit](https://github.com/lilabrooks/claude-okf-repo-kit) on
 top adds the goal file, source-to-knowledge mapping, and workflow that keep
 this bundle in sync with the code.
