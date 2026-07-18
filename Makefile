@@ -18,6 +18,7 @@ MYPY ?= $(if $(wildcard .venv/bin/mypy),.venv/bin/mypy,mypy)
 PYTEST ?= $(if $(wildcard .venv/bin/pytest),.venv/bin/pytest,pytest)
 VERSIONS ?= 3.12 3.13 3.14
 UV_RUN ?= uv run --isolated
+TEMPLATE_SCRIPTS := $(wildcard scripts/create-project scripts/rename-project)
 
 .PHONY: check check-env shell lint format typecheck test okf coverage check-all
 
@@ -27,7 +28,7 @@ check-env:
 	$(PYTHON) scripts/check-env.py
 
 shell:
-	bash -n scripts/create-project scripts/rename-project
+	@if [ -n "$(TEMPLATE_SCRIPTS)" ]; then bash -n $(TEMPLATE_SCRIPTS); fi
 
 lint:
 	$(RUFF) check .

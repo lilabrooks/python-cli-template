@@ -124,6 +124,14 @@ def test_removes_single_use_scripts_from_target(tmp_path: Path) -> None:
     assert not (target / "scripts" / "create-project").exists()
     assert not (target / "tests" / "test_create_project.py").exists()
     assert (target / "scripts" / "check-okf-docs.py").is_file()
+    result = subprocess.run(
+        ["make", "shell"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_prefers_uv_and_writes_project_lock(tmp_path: Path) -> None:
