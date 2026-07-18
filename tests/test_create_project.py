@@ -3,8 +3,9 @@
 The script is the deterministic path agents and humans run to stamp this
 template into a new project, so its contract is guarded here: extraction from
 the committed tree, rename, .gitignore merge, collision refusal, uv setup,
-kit-candidate reporting, and removal of the single-use scripts. CI exercises
-the complete uv and pip paths against a generated project.
+path-safe internal-directory pruning, kit-candidate reporting, and removal of
+the single-use scripts. CI exercises the complete uv and pip paths against a
+generated project.
 """
 
 import os
@@ -79,6 +80,50 @@ def test_rename_project_usage_is_stable() -> None:
     assert result.stderr.startswith("Usage:\n")
     assert "DIST must use lowercase letters" in result.stderr
     assert result.stdout == ""
+
+
+def test_rename_project_prunes_internal_dirs_in_bracketed_checkout(tmp_path: Path) -> None:
+    _require_git_checkout()
+    target = tmp_path / "project[qa]"
+    target.mkdir()
+    archive = subprocess.run(
+        ["git", "archive", "HEAD"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
+        ["tar", "-xf", "-", "-C", str(target)],
+        input=archive.stdout,
+        check=True,
+    )
+    shutil.copy2(REPO_ROOT / "scripts" / "rename-project", target / "scripts" / "rename-project")
+    subprocess.run(["git", "init", "-q", str(target)], check=True)
+    excluded_dirs = (
+        ".git",
+        ".venv",
+        ".venv.nosync",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+    )
+    sentinels = []
+    for directory in excluded_dirs:
+        sentinel = target / directory / "skeleton_cli-sentinel"
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
+        sentinel.write_text("skeleton_cli\n", encoding="utf-8")
+        sentinels.append(sentinel)
+
+    result = subprocess.run(
+        ["bash", str(target / "scripts" / "rename-project"), "sample-tool"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (target / "src" / "sample_tool").is_dir()
+    assert all(sentinel.read_text(encoding="utf-8") == "skeleton_cli\n" for sentinel in sentinels)
 
 
 def test_creates_renamed_project_from_committed_tree(tmp_path: Path) -> None:

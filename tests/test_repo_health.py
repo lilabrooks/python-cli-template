@@ -107,6 +107,14 @@ def test_scanner_requirements_avoid_exact_pins() -> None:
     assert not pinned, f"requirements.txt should use lower bounds, not exact pins: {pinned}"
 
 
+def test_sdist_includes_agent_instruction_entrypoints() -> None:
+    data = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    includes = data["tool"]["hatch"]["build"]["targets"]["sdist"]["include"]
+    assert isinstance(includes, list)
+    missing = {"AGENTS.md", "CLAUDE.md"} - set(includes)
+    assert not missing, f"source archive omits agent instruction entrypoints: {sorted(missing)}"
+
+
 def test_no_tracked_files_match_gitignore() -> None:
     """No committed file should match a .gitignore pattern.
 

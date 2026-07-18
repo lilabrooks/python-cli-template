@@ -104,6 +104,10 @@ cannot portably use them.
    drops the two generator scripts and their smoke test — template tooling that
    has no role in a downstream project. (The preferred path removes these same
    three files for you.)
+
+   The rename step prunes Git internals, virtual environments, and tool caches
+   by directory name, so checkout paths containing spaces or square brackets do
+   not weaken those exclusions.
 3. **Create the environment and verify the gate with
    [uv](https://docs.astral.sh/uv/):**
 

@@ -9,9 +9,10 @@
 #   - env-var prefix  SPEC_DRIFT   (package name upper-cased)
 #
 # The script rewrites the three skeleton tokens (skeleton-cli, skeleton_cli,
-# SKELETON_CLI) across every tracked file except itself and LICENSE, moves
-# src/skeleton_cli/ to the new package directory, and substitutes the template
-# owner's name and contact details using the local Git configuration.
+# SKELETON_CLI) across repository text files except itself, LICENSE, Git
+# internals, virtual environments, and tool caches. It moves src/skeleton_cli/
+# to the new package directory and substitutes the template owner's name and
+# contact details using the local Git configuration.
 # LICENSE is left untouched: relicensing is a deliberate act, not a rename.
 
 set -euo pipefail
@@ -50,19 +51,24 @@ if [ -d "$ROOT/src/$PKG" ] && [ "$PKG" != "skeleton_cli" ]; then
   exit 1
 fi
 
-# Every regular text file in the repo except this script, LICENSE, and git
-# internals. Works in and out of a git checkout.
+# Every regular file in the repository except this script, LICENSE, Git
+# internals, virtual environments, and tool caches. The substitution helper
+# skips non-UTF-8 files. Works in and out of a Git checkout.
 target_files() {
-  find "$ROOT" -type f \
-    ! -path "$ROOT/.git/*" \
-    ! -path "$ROOT/.venv/*" \
-    ! -path "$ROOT/.venv.nosync/*" \
-    ! -path "$ROOT/.mypy_cache/*" \
-    ! -path "$ROOT/.pytest_cache/*" \
-    ! -path "$ROOT/.ruff_cache/*" \
+  find "$ROOT" \
+    -type d \( \
+      -name .git -o \
+      -name .venv -o \
+      -name .venv.nosync -o \
+      -name .mypy_cache -o \
+      -name .pytest_cache -o \
+      -name .ruff_cache \
+    \) -prune -o \
+    -type f \
     ! -name 'rename-project' \
     ! -name 'LICENSE' \
-    ! -name '*.pyc'
+    ! -name '*.pyc' \
+    -print
 }
 
 substitute() {

@@ -28,6 +28,12 @@ All notable changes to this project are documented here. The format is based on 
   scripted `create-project` path removes automatically. Previously the manual
   instructions mentioned only the rename script, leaving generator tooling
   behind in projects created via the GitHub "Use this template" button.
+- `rename-project` now prunes Git internals, virtual environments, and tool
+  caches by directory name instead of interpolated `find -path` patterns. A
+  checkout path containing glob characters such as square brackets can no
+  longer make the rename walk or rewrite those excluded directories.
+- Source archives now include both documented agent instruction entry points,
+  `AGENTS.md` and `CLAUDE.md`, with a repository-health guard against drift.
 
 ## [0.2.0] - 2026-07-17
 

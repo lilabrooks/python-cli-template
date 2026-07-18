@@ -14,6 +14,12 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-17
 
+- Fixed `rename-project`'s excluded-directory traversal for checkout paths
+  containing glob characters such as square brackets. Directory-name pruning
+  now keeps `.git`, virtual environments, and tool caches outside the rename;
+  a regression test places rewriteable sentinels in each excluded directory.
+- Added `CLAUDE.md` beside `AGENTS.md` in the source-distribution manifest and
+  guarded both agent instruction entry points with a repository-health test.
 - Aligned the manual template-setup path with the scripted one on cleanup.
   The README manual path and `rename-project`'s printed next steps now instruct
   removing all three single-use generator files (`rename-project`,

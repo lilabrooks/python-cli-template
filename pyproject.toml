@@ -45,6 +45,7 @@ include = [
     ".env.example",
     ".gitignore",
     "AGENTS.md",
+    "CLAUDE.md",
     "src",
     "tests",
     "docs",
