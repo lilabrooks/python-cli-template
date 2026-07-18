@@ -22,6 +22,12 @@ All notable changes to this project are documented here. The format is based on 
 - `.env.example` now states that nothing loads `.env` automatically and shows
   how to export or source the variables, since the settings layer reads
   `os.environ` directly.
+- The README manual path and `rename-project`'s printed next steps now tell
+  users to remove all three single-use generator files (`rename-project`,
+  `create-project`, and `tests/test_create_project.py`), matching what the
+  scripted `create-project` path removes automatically. Previously the manual
+  instructions mentioned only the rename script, leaving generator tooling
+  behind in projects created via the GitHub "Use this template" button.
 
 ## [0.2.0] - 2026-07-17
 

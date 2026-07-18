@@ -88,17 +88,22 @@ cannot portably use them.
 
 1. **Create your repo from this one** (GitHub "Use this template", or clone
    and re-init).
-2. **Rename the skeleton** (single-use, then delete the script):
+2. **Rename the skeleton**, then remove the template's single-use generator
+   files:
 
    ```bash
    bash scripts/rename-project your-tool-name
+   rm scripts/rename-project scripts/create-project tests/test_create_project.py
    ```
 
-   This rewrites the package (`skeleton_cli`), distribution (`skeleton-cli`),
-   and env-var prefix (`SKELETON_CLI`) everywhere, moves the source directory,
-   substitutes your `git config user.name` and `user.email` as owner and
-   contact in the docs and community files, and resets the project to its own
-   `0.1.0` with a fresh `CHANGELOG.md` and `docs/log.md`.
+   `rename-project` rewrites the package (`skeleton_cli`), distribution
+   (`skeleton-cli`), and env-var prefix (`SKELETON_CLI`) everywhere, moves the
+   source directory, substitutes your `git config user.name` and `user.email`
+   as owner and contact in the docs and community files, and resets the project
+   to its own `0.1.0` with a fresh `CHANGELOG.md` and `docs/log.md`. The `rm`
+   drops the two generator scripts and their smoke test — template tooling that
+   has no role in a downstream project. (The preferred path removes these same
+   three files for you.)
 3. **Create the environment and verify the gate with
    [uv](https://docs.astral.sh/uv/):**
 

@@ -14,6 +14,13 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-17
 
+- Aligned the manual template-setup path with the scripted one on cleanup.
+  The README manual path and `rename-project`'s printed next steps now instruct
+  removing all three single-use generator files (`rename-project`,
+  `create-project`, `tests/test_create_project.py`), matching what
+  `create-project` removes automatically. This stops projects created via the
+  GitHub "Use this template" button from carrying generator tooling into their
+  first commit.
 - Kept claude-okf-repo-kit's safe same-name-file behavior visible during
   project creation. `create-project` now prints the installer summary and
   explains that `CLAUDE.2.md` is an inactive review candidate; the README
