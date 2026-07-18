@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Added
+
+- Root `CLAUDE.md` that imports `AGENTS.md`, so Claude Code and Codex read one
+  set of repository instructions from a single source.
+
+### Changed
+
+- README now leads the "Using the template" section with the rename step the
+  GitHub "Use this template" button cannot run, and describes the owner,
+  contact, and version resets `rename-project` performs.
+
 ## [0.2.0] - 2026-07-17
 
 ### Added

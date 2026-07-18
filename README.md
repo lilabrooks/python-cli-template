@@ -52,6 +52,13 @@ honest from here.
 
 ## Using the template
 
+> **If you used the GitHub "Use this template" button, your first command is
+> `bash scripts/rename-project your-tool-name`.** The button only copies the
+> tree — until you run the rename, every project keeps the `skeleton-cli` name
+> and the template maintainer's contact details in `pyproject.toml`,
+> `SECURITY.md`, and `CODE_OF_CONDUCT.md`. The preferred path below does this
+> for you; the manual path makes it step 2.
+
 **Preferred path — one command from a template checkout.** Deterministic and
 agent-neutral (plain bash; equally runnable by a human, Claude Code, or
 Codex), so no session re-derives the sequence:
@@ -87,7 +94,9 @@ created because Python console-script shebangs cannot portably use them.
 
    This rewrites the package (`skeleton_cli`), distribution (`skeleton-cli`),
    and env-var prefix (`SKELETON_CLI`) everywhere, moves the source directory,
-   and substitutes your `git config user.name` as owner in the docs.
+   substitutes your `git config user.name` and `user.email` as owner and
+   contact in the docs and community files, and resets the project to its own
+   `0.1.0` with a fresh `CHANGELOG.md` and `docs/log.md`.
 3. **Create the environment and verify the gate with
    [uv](https://docs.astral.sh/uv/):**
 
