@@ -189,5 +189,7 @@ Next steps:
      and .env.example.
   5. Install the operating contract on top (goal, mapping, hooks, loop):
      bash /path/to/claude-okf-repo-kit/scripts/update-existing-repo .
-  6. Delete this script; it is single-use.
+  6. Remove the single-use generator files; they have no role downstream:
+     rm scripts/rename-project scripts/create-project \
+       tests/test_create_project.py
 EOF
