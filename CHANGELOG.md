@@ -14,6 +14,9 @@ All notable changes to this project are documented here. The format is based on 
 - README now leads the "Using the template" section with the rename step the
   GitHub "Use this template" button cannot run, and describes the owner,
   contact, and version resets `rename-project` performs.
+- `.env.example` now states that nothing loads `.env` automatically and shows
+  how to export or source the variables, since the settings layer reads
+  `os.environ` directly.
 
 ## [0.2.0] - 2026-07-17
 
