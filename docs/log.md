@@ -14,6 +14,13 @@ Dated changes to the docs bundle, newest first.
 
 ## 2026-07-17
 
+- Kept claude-okf-repo-kit's safe same-name-file behavior visible during
+  project creation. `create-project` now prints the installer summary and
+  explains that `CLAUDE.2.md` is an inactive review candidate; the README
+  documents the review, merge, deletion, verification, and commit sequence.
+  A generated-project regression test preserves the live `CLAUDE.md` while
+  checking candidate reporting, and a manual run against the sibling real kit
+  passed its `verify-install` gate without warnings.
 - Prepared the repository for public template use: generalized security and
   contribution guidance for generated projects, added support and contributor
   forms, documented the Bash/Make platform boundary, and clarified that the

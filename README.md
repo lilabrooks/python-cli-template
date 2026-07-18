@@ -76,11 +76,13 @@ the script uses the venv/pip fallback; pass `--pip` to select it explicitly. It
 installs [claude-okf-repo-kit](https://github.com/lilabrooks/claude-okf-repo-kit)
 when a clone is available (`--kit /path`, auto-detected as a sibling, or
 `--no-kit`), removes the template-side tooling from the target, and prints the
-judgment steps that remain: project README and CHANGELOG, the goal, the
-playbook brackets. Its mechanics are guarded by `tests/test_create_project.py`;
-CI also runs the complete uv and pip setup paths on Python 3.14, including a
-bracketed target path. Target paths containing `#` are refused before files are
-created because Python console-script shebangs cannot portably use them.
+kit installer's created/updated/review summary plus the judgment steps that
+remain: project README and CHANGELOG, numbered candidate review, the goal, and
+the playbook brackets. Its mechanics are guarded by
+`tests/test_create_project.py`; CI also runs the complete uv and pip setup paths
+on Python 3.14, including a bracketed target path. Target paths containing `#`
+are refused before files are created because Python console-script shebangs
+cannot portably use them.
 
 **Manual path** (the same sequence, step by step):
 
@@ -121,9 +123,37 @@ created because Python console-script shebangs cannot portably use them.
    bash /path/to/claude-okf-repo-kit/scripts/update-existing-repo .
    ```
 
+   The safe updater preserves same-name Markdown files. Because this template
+   already has `CLAUDE.md`, the kit normally writes its proposed playbook as
+   `CLAUDE.2.md` and lists it under **Needs review**.
 5. Replace the `hello` command with your tool's real surface and start
    building. The README you are reading describes the template — rewrite it
    for your project.
+
+### Resolving kit review candidates
+
+Numbered files such as `CLAUDE.2.md`, `AGENTS.2.md`, or
+`docs/okf-map.2.yml` are review candidates. They are deliberately trackable,
+and the live tools do not load them automatically. In particular, Claude Code
+loads `CLAUDE.md`; it ignores `CLAUDE.2.md` until its content is merged into a
+live instruction file.
+
+Before the first project commit:
+
+1. Read the kit installer's **Needs review** list and compare each candidate
+   with its live file.
+2. Move shared repository rules into `AGENTS.md`. Keep Claude-specific `@`
+   imports and installed-skill references in `CLAUDE.md`.
+3. Delete each numbered candidate after adopting or rejecting its content.
+4. Run the kit's `scripts/verify-install` from the kit checkout, then run the
+   generated project's `make check`.
+5. Check `git status` and commit only the resolved live files. An unresolved
+   `CLAUDE.2.md` should not remain in the project history.
+
+`scripts/create-project` prints the kit installer summary and repeats this
+candidate-review requirement in its final next steps. CI uses a fake kit to
+guard that reporting contract. A release check with a local real-kit clone
+confirms the two repositories still compose as expected.
 
 The build metadata exists so this chassis can prove its wheel and source
 archive. This repository is distributed as a GitHub template; the example
@@ -156,12 +186,14 @@ Everything an agent runs here is uv, bash, and make, so Claude Code and Codex
 use the same mechanical path: run `scripts/create-project`, then verify with
 `uv run make check`. The root `AGENTS.md` gives Codex the stack commands and safety
 rules immediately. After the kit is installed on a created project, it ships
-Claude Code's process stack (`CLAUDE.md`, `.claude/`); the owner can mirror its
-workflow-specific hooks and skills into `.codex/hooks/` and `.agents/skills/`
-(see spec-drift or spec-agent-cli for a worked pattern, and the kit README's
-second-agent section for the rules). When a Codex mirror exists, repository
-health tests require the complete hook set with byte-identical contents and a
-paired skill set.
+Claude Code's `.claude/` hooks, settings, and skills. If the live `CLAUDE.md`
+already exists, the kit preserves it and stages its proposed playbook as a
+numbered review candidate; resolve that candidate before expecting the full
+goal-loop instructions to load. The owner can mirror workflow-specific hooks
+and skills into `.codex/hooks/` and `.agents/skills/` (see spec-drift or
+spec-agent-cli for a worked pattern, and the kit README's second-agent section
+for the rules). When a Codex mirror exists, repository health tests require the
+complete hook set with byte-identical contents and a paired skill set.
 
 ## The walking skeleton
 

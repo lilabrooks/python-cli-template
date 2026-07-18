@@ -14,6 +14,11 @@ All notable changes to this project are documented here. The format is based on 
 - README now leads the "Using the template" section with the rename step the
   GitHub "Use this template" button cannot run, and describes the owner,
   contact, and version resets `rename-project` performs.
+- `create-project` now preserves the kit installer's review summary and warns
+  that numbered files such as `CLAUDE.2.md` are inactive merge candidates.
+  The README documents how to merge shared rules into `AGENTS.md`, keep
+  Claude-specific imports in `CLAUDE.md`, delete resolved candidates, and
+  verify before committing.
 - `.env.example` now states that nothing loads `.env` automatically and shows
   how to export or source the variables, since the settings layer reads
   `os.environ` directly.

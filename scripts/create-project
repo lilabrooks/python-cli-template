@@ -184,7 +184,8 @@ if [ "$NO_KIT" -eq 1 ]; then
 fi
 if [ -n "$KIT_DIR" ]; then
   if [ -f "$KIT_DIR/scripts/update-existing-repo" ]; then
-    bash "$KIT_DIR/scripts/update-existing-repo" "$TARGET" >/dev/null
+    printf '\nKit installer output:\n'
+    bash "$KIT_DIR/scripts/update-existing-repo" "$TARGET"
     kit_note="claude-okf-repo-kit installed from $KIT_DIR"
     kit_installed=1
   else
@@ -218,13 +219,28 @@ Judgment steps this script cannot do:
   1. Rewrite README.md for the project (it still describes the template).
   2. Review CHANGELOG.md's new 0.1.0 entry, the reset docs/log.md,
      maintainer contact details, and LICENSE ownership.
-  3. Provide the goal: drop a finished docs/GOAL.md in, or run the goal
+EOF
+
+next_step=3
+if [ "$kit_installed" -eq 1 ]; then
+  cat <<'EOF'
+  3. Resolve numbered kit candidates before the first commit. CLAUDE.2.md is
+     a review candidate, not an instruction file Claude Code loads. Merge
+     shared rules into AGENTS.md, add Claude-specific imports and skill
+     references to CLAUDE.md, then delete CLAUDE.2.md. Review other numbered
+     candidates the same way; do not commit unresolved candidates.
+EOF
+  next_step=4
+fi
+
+cat <<EOF
+  $next_step. Provide the goal: drop a finished docs/GOAL.md in, or run the goal
      interview from Claude Code. AGENTS.md already carries Codex's stack
      commands; port any kit-specific workflow rules, hooks, and skills per the
      kit README's second-agent section, or fill the goal by hand. Then fill the
      playbook's master-objective and verification-command brackets from it.
-  4. If the CLI will not call language models, delete the provider layer
+  $((next_step + 1)). If the CLI will not call language models, delete the provider layer
      (the README's "Deleting the model-provider layer" section lists every
      piece).
-  5. Review and commit (including uv.lock when uv created it).
+  $((next_step + 2)). Review and commit (including uv.lock when uv created it).
 EOF

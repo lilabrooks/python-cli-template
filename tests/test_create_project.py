@@ -3,8 +3,8 @@
 The script is the deterministic path agents and humans run to stamp this
 template into a new project, so its contract is guarded here: extraction from
 the committed tree, rename, .gitignore merge, collision refusal, uv setup,
-and removal of the single-use scripts. CI exercises the complete uv and pip
-paths against a generated project.
+kit-candidate reporting, and removal of the single-use scripts. CI exercises
+the complete uv and pip paths against a generated project.
 """
 
 import os
@@ -98,6 +98,7 @@ def test_creates_renamed_project_from_committed_tree(tmp_path: Path) -> None:
     changelog = (target / "CHANGELOG.md").read_text(encoding="utf-8")
     assert "## 0.1.0 -" in changelog
     assert "python-cli-template/compare" not in changelog
+    assert "Resolve numbered kit candidates" not in result.stdout
     docs_log = (target / "docs" / "log.md").read_text(encoding="utf-8")
     assert "Started the project documentation bundle" in docs_log
     assert "file-sync damage" not in docs_log
@@ -253,6 +254,34 @@ esac
     assert run_log.read_text(encoding="utf-8").splitlines() == ["run", "run"]
     assert (target / "KIT_INSTALLED").is_file()
     assert "post-kit make check passed" in result.stdout
+
+
+def test_reports_kit_candidate_and_preserves_live_claude_file(tmp_path: Path) -> None:
+    _require_git_checkout()
+    target = tmp_path / "new-proj"
+    kit = tmp_path / "kit"
+    (kit / "scripts").mkdir(parents=True)
+    (kit / "scripts" / "update-existing-repo").write_text(
+        """#!/bin/sh
+set -eu
+printf '# Kit playbook candidate\n' > "$1/CLAUDE.2.md"
+printf 'Needs review:\n  - CLAUDE.md exists; wrote candidate CLAUDE.2.md\n'
+""",
+        encoding="utf-8",
+    )
+
+    result = _create(target, "sample-tool", kit=kit)
+
+    assert result.returncode == 0, result.stderr
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == (
+        REPO_ROOT / "CLAUDE.md"
+    ).read_text(encoding="utf-8")
+    assert (target / "CLAUDE.2.md").read_text(encoding="utf-8") == ("# Kit playbook candidate\n")
+    assert "Kit installer output:" in result.stdout
+    assert "wrote candidate CLAUDE.2.md" in result.stdout
+    assert "CLAUDE.2.md is" in result.stdout
+    assert "a review candidate, not an instruction file Claude Code loads" in result.stdout
+    assert "do not commit unresolved candidates" in result.stdout
 
 
 def test_refuses_colliding_target_files(tmp_path: Path) -> None:
