@@ -3,9 +3,10 @@
 The script is the deterministic path agents and humans run to stamp this
 template into a new project, so its contract is guarded here: extraction from
 the committed tree, rename, .gitignore merge, collision refusal, uv setup,
-path-safe internal-directory pruning, kit-candidate reporting, and removal of
-the single-use scripts. CI exercises the complete uv and pip paths against a
-generated project.
+path-safe internal-directory pruning, kit-candidate reporting, removal of the
+single-use scripts, and removal of the template-only CI so a generated project
+ships green. CI exercises the complete uv and pip paths against a generated
+project.
 """
 
 import os
@@ -178,6 +179,30 @@ def test_removes_single_use_scripts_from_target(tmp_path: Path) -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_generated_project_ci_has_no_template_only_references(tmp_path: Path) -> None:
+    _require_git_checkout()
+    target = tmp_path / "new-proj"
+
+    _create(target, "sample-tool")
+
+    workflows = target / ".github" / "workflows"
+    # The template-only self-test workflow is dropped; the everyday workflows stay.
+    assert not (workflows / "template-chassis.yml").exists()
+    assert {path.name for path in workflows.glob("*.yml")} == {
+        "tests.yml",
+        "code-quality.yml",
+        "coverage.yml",
+    }
+
+    # No surviving workflow may invoke the deleted generator scripts or their
+    # smoke test; a lingering reference is exactly what ships a generated
+    # project with red CI.
+    for path in workflows.glob("*.yml"):
+        text = path.read_text(encoding="utf-8")
+        for token in ("create-project", "rename-project", "test_create_project"):
+            assert token not in text, f"{path.name} still references {token}"
 
 
 def test_prefers_uv_and_writes_project_lock(tmp_path: Path) -> None:

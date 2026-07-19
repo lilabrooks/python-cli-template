@@ -7,7 +7,7 @@
 # environment with uv (or the venv/pip fallback) and run `make check`, install
 # the claude-okf-repo-kit operating contract when a kit clone is available,
 # rerun the gate after installation, and delete the single-use template scripts
-# from the target. What it cannot
+# and the template-only CI workflow from the target. What it cannot
 # do — the project README, CHANGELOG, goal, and playbook content — it prints as
 # next steps.
 #
@@ -146,11 +146,14 @@ else
 fi
 
 # Rename the skeleton with the target's own copy of the script, then remove
-# the template-side tooling from the target: both single-use scripts and the
-# smoke test that exercises them (it has nothing to test once they are gone).
+# the template-side tooling from the target: both single-use scripts, the
+# smoke test that exercises them (it has nothing to test once they are gone),
+# and the template-chassis workflow (its jobs run those scripts and assert the
+# template's own version, so they only fail in a generated project).
 bash "$TARGET/scripts/rename-project" "$DIST" | sed -n '1,2p'
 rm -f "$TARGET/scripts/rename-project" "$TARGET/scripts/create-project" \
-  "$TARGET/tests/test_create_project.py"
+  "$TARGET/tests/test_create_project.py" \
+  "$TARGET/.github/workflows/template-chassis.yml"
 
 venv_note="skipped (--skip-venv); preferred: uv sync --all-extras && uv run make check; fallback: python3 -m venv .venv && .venv/bin/pip install -e \".[dev,anthropic,openai]\" && make check"
 if [ "$SKIP_VENV" -eq 0 ]; then

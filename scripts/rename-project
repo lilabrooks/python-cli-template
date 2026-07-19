@@ -195,7 +195,8 @@ Next steps:
      and .env.example.
   5. Install the operating contract on top (goal, mapping, hooks, loop):
      bash /path/to/claude-okf-repo-kit/scripts/update-existing-repo .
-  6. Remove the single-use generator files; they have no role downstream:
+  6. Remove the single-use generator files and the template-only CI workflow;
+     they have no role downstream and its jobs fail once the scripts are gone:
      rm scripts/rename-project scripts/create-project \
-       tests/test_create_project.py
+       tests/test_create_project.py .github/workflows/template-chassis.yml
 EOF

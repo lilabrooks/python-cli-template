@@ -9,6 +9,20 @@ All notable changes to this project are documented here. The format is based on 
 - Root `CLAUDE.md` that imports `AGENTS.md`, so Claude Code and Codex read one
   set of repository instructions from a single source.
 
+### Fixed
+
+- Generated projects no longer ship with red CI. The template's chassis
+  self-tests — generating a project and building the template's own
+  distributions — moved from `tests.yml` into a dedicated
+  `.github/workflows/template-chassis.yml`, which `create-project` deletes from
+  the target (and the manual setup path removes by hand). Those jobs run the
+  single-use generator scripts and assert the template's own version, so they
+  only failed once a generated project deleted the scripts. The code-quality
+  "Check shell syntax" step now runs `make shell`, whose `shell` target already
+  no-ops when the generator scripts are absent, instead of a hardcoded
+  `bash -n scripts/create-project scripts/rename-project` that exited 127 in a
+  generated project.
+
 ### Changed
 
 - README now leads the "Using the template" section with the rename step the

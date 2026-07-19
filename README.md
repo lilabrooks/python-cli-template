@@ -93,7 +93,8 @@ cannot portably use them.
 
    ```bash
    bash scripts/rename-project your-tool-name
-   rm scripts/rename-project scripts/create-project tests/test_create_project.py
+   rm scripts/rename-project scripts/create-project \
+     tests/test_create_project.py .github/workflows/template-chassis.yml
    ```
 
    `rename-project` rewrites the package (`skeleton_cli`), distribution
@@ -101,9 +102,11 @@ cannot portably use them.
    source directory, substitutes your `git config user.name` and `user.email`
    as owner and contact in the docs and community files, and resets the project
    to its own `0.1.0` with a fresh `CHANGELOG.md` and `docs/log.md`. The `rm`
-   drops the two generator scripts and their smoke test — template tooling that
-   has no role in a downstream project. (The preferred path removes these same
-   three files for you.)
+   drops the two generator scripts, their smoke test, and the `template-chassis`
+   workflow — template tooling that has no role in a downstream project, and
+   whose CI jobs run those scripts and assert the template's own version, so
+   they only fail once the scripts are gone. (The preferred path removes these
+   same four files for you.)
 
    The rename step prunes Git internals, virtual environments, and tool caches
    by directory name, so checkout paths containing spaces or square brackets do
@@ -236,7 +239,7 @@ you what you missed.
 
 ```
 ├── AGENTS.md            # Codex setup, verification, and safety instructions
-├── .github/workflows/   # quality, tests, coverage — Python 3.12–3.14 matrix
+├── .github/workflows/   # quality, tests, coverage (3.12–3.14); template-chassis self-test, dropped on generate
 ├── docs/                # knowledge bundle indexes and documentation log
 ├── scripts/
 │   ├── check-env.py        # file-sync damage preflight, first step of make check
