@@ -2,7 +2,7 @@
 title: Documentation log
 type: log
 status: current
-date: 2026-07-17
+date: 2026-07-18
 owner: Lila Brooks
 deciders: [Lila Brooks]
 tags: [documentation, log]
@@ -11,6 +11,17 @@ tags: [documentation, log]
 # Documentation log
 
 Dated changes to the docs bundle, newest first.
+
+## 2026-07-18
+
+- Documented that generated projects no longer inherit red CI. The README
+  manual path, `create-project`, and `rename-project`'s printed next steps now
+  remove `.github/workflows/template-chassis.yml` alongside the single-use
+  generator scripts, and the README describes the template-chassis self-test
+  workflow that generated projects drop. The template's chassis self-tests
+  (project generation and building the template's own distributions) moved out
+  of `tests.yml` into that dedicated workflow, and the code-quality shell check
+  now runs `make shell` so it self-heals once the generator scripts are gone.
 
 ## 2026-07-17
 

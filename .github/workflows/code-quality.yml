@@ -41,8 +41,11 @@ jobs:
       - name: Run environment check
         run: python scripts/check-env.py
 
+      # `make shell` only syntax-checks the template's single-use generator
+      # scripts when they are present, so this step becomes a no-op once they
+      # have been removed from a project generated from the template.
       - name: Check shell syntax
-        run: bash -n scripts/create-project scripts/rename-project
+        run: make shell
 
       - name: Run Ruff lint
         run: ruff check .
